@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>О развитии технологических компаний в Российской Федерации</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=windows-1251; charset=windows-1251" />
+
+
+    <link rel="stylesheet" type="text/css" href="?doc_itself.css" />
+
+
+    <script type="text/javascript" src="?script.js" charset="windows-1251"></script>
+    <script type="text/javascript" src="?json.js" charset="windows-1251"></script>
+    <script type="text/javascript">
+
+        var bookMarkNumber = parseInt('', 10);
+        var textCompleted = 'True'.toLowerCase() == 'true';
+        var scrollTop = parseInt('', 10);
+
+        function goToMark() {
+            window.location.hash = "I0";
+        }
+
+        function changeFontOnLoad() {
+            if (window.parent.changeDocFont != null) {
+                window.parent.changeDocFont('t_normal');
+            }
+        }
+
+        function printOnLoad() {
+
+        }
+
+        function loadFullText() {
+            if (textCompleted)
+                return;
+            var supportPageOffset = window.pageXOffset !== undefined;
+            var isCSS1Compat = ((document.compatMode || "") === "CSS1Compat");
+            var scrollTop = supportPageOffset ? window.pageYOffset : isCSS1Compat ? document.documentElement.scrollTop : document.body.scrollTop;
+            var textContent = document.getElementById("text_content");
+            textContent.innerHTML = '';
+            textContent.appendChild(createSpinner('?'));
+            var newUrl = document.location.href.split('#')[0];
+            newUrl += '&fulltext=1&scrolltop=' + scrollTop;
+            window.location.href = newUrl;
+            FixImagesIE();
+        }
+        function LinkParseHash() {
+            var cells = document.getElementsByTagName("a");
+            for (var i = 0; i < cells.length; i++) {
+                var status = cells[i].setAttribute("target", "_parent");
+                cells[i].setAttribute("href", cells[i].getAttribute("href") + "&forhash=1")
+            }
+        }
+
+        function loadFinished() {
+            document.doctitle = 'О развитии технологических компаний в Российской Федерации';
+            window.docNum = parseInt('605786811', 10);
+            if (scrollTop > 0) {
+                window.scrollTo(0, scrollTop);
+            }
+            goToMark();
+            goToSelection();
+            setselchange();
+            IERecordSel();
+            changeFontOnLoad();
+            printOnLoad();
+            setLandscape();
+            if (textCompleted) {
+                hideSpinner();
+            }
+            FixImagesIE();
+        }
+
+        /*
+         Если проскролили больше половины текста, проверяем нужно ли загружать весь текст целиком
+         */
+        var didScroll = false;
+        window.onscroll = doThisStuffOnScroll;
+        function doThisStuffOnScroll() {
+            didScroll = true;
+        }
+        var refreshScrollId = setInterval(function () {
+            if (!textCompleted && didScroll) {
+                didScroll = false;
+                var scroll, height;
+                if (document.documentElement.scrollTop) {
+                    scroll = document.documentElement.scrollTop;
+                    height = document.documentElement.scrollHeight;
+                } else {
+                    scroll = document.body.scrollTop;
+                    height = document.body.scrollHeight;
+                }
+                if (scroll > height * 0.7) {
+                    clearInterval(refreshScrollId);
+                    loadFullText();
+                }
+            }
+        }, 1000);
+        // в IE 11 встроенный механизм ресайза работает нехорошо.
+        function FixImagesIE() {
+            if (!document.documentMode) return; // IE < 8 or not IE
+            if (navigator.userAgent.indexOf('MSIE') >= 0) return; // IE < 11
+            var images = document.querySelectorAll('img');
+            var tmpImages = [];
+            for (var i = 0; i < images.length; i++) {
+                var image = images[i];
+                var iW = images[i].naturalWidth;
+                var iH = images[i].naturalHeight;
+                var targetW = image.width;
+                var targetH = image.height;
+                if ((targetH * 2) > iH) continue; // до двухкратного уменьшения обойдемся встроенным ресайзом.
+                tmpImages[i] = new Image();
+                tmpImages[i].src = image.src;
+                tmpImages[i].setAttribute('iW', iW);
+                tmpImages[i].setAttribute('iH', iH);
+                tmpImages[i].setAttribute('targetW', targetW);
+                tmpImages[i].setAttribute('targetH', targetH);
+                tmpImages[i].setAttribute('num', i);
+                tmpImages[i].onload = function () {
+                    var iW = parseInt(this.getAttribute('iW')) / 2;
+                    var iH = parseInt(this.getAttribute('iH')) / 2;
+                    var targetW = parseInt(this.getAttribute('targetW'));
+                    var targetW = parseInt(this.getAttribute('targetH'));
+                    var num = parseInt(this.getAttribute('num'));
+                    iW = iW < targetW ? targetW : iW;
+                    iH = iH < targetH ? targetH : iH;
+                    this.setAttribute('iW', iW);
+                    this.setAttribute('iH', iH);
+                    var cnv = document.createElement('canvas');
+                    cnv.height = iH;
+                    cnv.width = iW;
+                    var ctx = cnv.getContext('2d');
+                    ctx.drawImage(this, 0, 0, iW, iH);
+                    var dataUrl = cnv.toDataURL();
+                    images[num].src = dataUrl;
+                    if (iW <= targetW || iH <= targetH)
+                        return;
+                    this.src = dataUrl; // неявная рекурсия
+                }
+            }
+        }
+
+
+    </script>
+</head>
+
+<body style="height:100%;" onload="loadFinished();" class="doc_content_bg_default">
+
+
+
+    <div id="doc_content" class="doc_content" style="width: 750px;min-width: 710px;">
+
+
+
+        <div id="text_content">
+            <!DOCTYPE html>
+            <html lang="ru" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"
+                xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:st1="urn:schemas-microsoft-com:office:smarttags"
+                xmlns="http://www.w3.org/TR/REC-html40">
+
+            <head>
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+                <title>Complex</title>
+                <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:ValidateAgainstSchemas/><w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid><w:IgnoreMixedContent>false</w:IgnoreMixedContent><w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText><w:Compatibility><w:SelectEntireFieldWithStartOrEnd/><w:UseWord2002TableStyleRules/></w:Compatibility><w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel></w:WordDocument></xml><![endif]-->
+                <style>
+                    <!--/*CSS*/
+                    @page vert {
+                        size: 595.3pt 841.9pt;
+                        mso-page-orientation: portrait;
+                        margin: 15mm 10mm 15mm 12mm;
+                        mso-header-margin: 10mm;
+                        mso-footer-margin: 10mm;
+                        mso-paper-source: 0;
+                    }
+
+                    @page hori {
+                        size: 841.9pt 595.3pt;
+                        mso-page-orientation: landscape;
+                        margin: 15mm 10mm 15mm 12mm;
+                        mso-header-margin: 10mm;
+                        mso-footer-margin: 10mm;
+                        mso-paper-source: 0;
+                    }
+
+                    @page any {
+                        margin: 15mm 10mm 15mm 12mm;
+                    }
+
+                    @page {
+                        margin: 15mm 7mm 15mm 15mm;
+                    }
+
+                    body {
+                        margin: 0px 0px 0px 12px;
+                        border: 0;
+                        padding: 0;
+                        color: #333333;
+                        background-color: #fffefb;
+                        font-size: 18px;
+                        font-family: "times new roman", times, serif;
+                        line-height: 125%;
+                        word-wrap: break-word;
+                    }
+
+                    div {
+                        margin: 0;
+                        border: 0;
+                        padding: 0;
+                    }
+
+                    div.comment {
+                        display: block;
+                        width: 670px;
+                        margin-bottom: 5px;
+                        padding: 5px 5px 7px 5px;
+                        border-radius: 5px;
+                        background-color: #d5d5d5;
+                        font-size: 16px;
+                        font-family: tahoma, arial, sans-serif;
+                        line-height: 125%;
+                        text-align: justify;
+                    }
+
+                    div.fixedcomment {
+                        display: block;
+                        width: 670px;
+                        margin-bottom: 5px;
+                        padding: 5px 3325px 7px 17px;
+                        background-color: #d5d5d5;
+                        font-size: 16px;
+                        font-family: tahoma, arial, sans-serif;
+                        line-height: 125%;
+                        text-align: justify;
+                    }
+
+                    div.fixedcomment:before {
+                        display: none;
+                        content: " ";
+                        top: 0;
+                        left: 0;
+                        position: fixed;
+                        z-index: 1;
+                        width: 670px;
+                        margin: 0;
+                        padding: 5px 3325px 7px 17px;
+                        background-color: #d5d5d5;
+                        font-size: 16px;
+                        font-family: tahoma, arial, sans-serif;
+                        line-height: 125%;
+                        text-align: justify;
+                    }
+
+                    div.clip {
+                        margin-top: 4px;
+                        width: 680px;
+                        font-size: 16px;
+                        font-family: tahoma, arial, sans-serif;
+                        line-height: 125%;
+                    }
+
+                    div.time {
+                        padding: 16px 0px;
+                    }
+
+                    div.past {
+                        background-color: #f0b0c0;
+                    }
+
+                    div.future {
+                        background-color: #b8f0d0;
+                    }
+
+                    div.present {
+                        background-color: #a8e0ff;
+                    }
+
+                    div.brd {
+                        margin: 8px 0px;
+                        border-bottom: 1px solid #a0a0a0;
+                        padding: 0;
+                    }
+
+                    div.fragments {
+                        min-height: 1000px;
+                        width: 4000px;
+                    }
+
+                    img,
+                    img.mid {
+                        margin-bottom: 0;
+                        vertical-align: middle;
+                    }
+
+                    img.bot {
+                        margin-bottom: -5px;
+                        vertical-align: baseline;
+                    }
+
+                    p.I {
+                        text-indent: 0;
+                        margin-left: 45px;
+                        max-width: 635px;
+                        text-align: left;
+                    }
+
+                    p.K {
+                        text-indent: 0;
+                        margin-left: 45px;
+                        max-width: 635px;
+                        text-align: justify;
+                    }
+
+                    p.H {
+                        text-indent: -81px;
+                        margin-left: 126px;
+                        max-width: 509px;
+                        text-align: left;
+                        font-weight: bold;
+                    }
+
+                    p.S {
+                        text-indent: 0;
+                        margin-left: 340px;
+                        max-width: 340px;
+                        text-align: center;
+                    }
+
+                    p.C {
+                        text-indent: 0;
+                        margin-left: 45px;
+                        margin-right: 45px;
+                        max-width: 590px;
+                        text-align: center
+                    }
+
+                    p.T {
+                        text-indent: 0;
+                        margin-left: 45px;
+                        margin-right: 45px;
+                        max-width: 590px;
+                        text-align: center;
+                        font-weight: bold;
+                    }
+
+                    p.Z {
+                        text-indent: 0;
+                        margin-left: 45px;
+                        margin-right: 45px;
+                        max-width: 590px;
+                        text-align: center;
+                        font-weight: bold;
+                    }
+
+                    p.Y {
+                        text-indent: 0;
+                        margin-left: 45px;
+                        max-width: 635px;
+                        text-align: left;
+                    }
+
+                    p.M {
+                        white-space: pre;
+                        overflow-wrap: normal;
+                        text-indent: 0;
+                        max-width: 4000px;
+                        text-align: left;
+                        font-size: 17px;
+                        font-family: "courier new", courier, monospace;
+                    }
+
+                    p.L {
+                        text-indent: 0;
+                        text-align: left;
+                    }
+
+                    p.R {
+                        text-indent: 0;
+                        text-align: right;
+                    }
+
+                    p.J {
+                        text-indent: 0;
+                        text-align: justify;
+                    }
+
+                    p.F {
+                        text-indent: 0;
+                        margin-left: 45px;
+                        max-width: 625px;
+                        text-align: left;
+                        background-color: #dcfeed;
+                        border-left: 5px solid #94DD96;
+                        padding-left: 5px;
+                    }
+
+                    p.A {
+                        text-indent: 0;
+                        margin-left: 45px;
+                        max-width: 625px;
+                        text-align: left;
+                        background-color: #f0f0f0;
+                        border-left: 5px solid #c0c0c0;
+                        padding-left: 5px;
+                    }
+
+                    p,
+                    p.P {
+                        text-indent: 45px;
+                        margin: 6px 0px;
+                        max-width: 680px;
+                        text-align: justify;
+                        border: 0;
+                        padding: 0;
+                    }
+
+                    p.N {
+                        text-indent: 45px;
+                        margin: 6px 0px;
+                        max-width: 680px;
+                        text-align: justify;
+                        border: 0;
+                        padding: 0;
+                        font-size: 16px;
+                    }
+
+                    .HD {
+                        display: none;
+                    }
+
+                    .W0 {
+                        vertical-align: baseline;
+                        font-size: 100%;
+                        font-weight: normal;
+                        font-style: normal;
+                        text-decoration: none;
+                    }
+
+                    .W1 {
+                        vertical-align: baseline;
+                        font-size: 100%;
+                        font-weight: normal;
+                        font-style: normal;
+                        text-decoration: underline;
+                    }
+
+                    .W2 {
+                        vertical-align: baseline;
+                        font-size: 100%;
+                        font-weight: normal;
+                        font-style: italic;
+                        text-decoration: none;
+                    }
+
+                    .W3 {
+                        vertical-align: baseline;
+                        font-size: 100%;
+                        font-weight: normal;
+                        font-style: italic;
+                        text-decoration: underline;
+                    }
+
+                    .W4 {
+                        vertical-align: baseline;
+                        font-size: 100%;
+                        font-weight: bold;
+                        font-style: normal;
+                        text-decoration: none;
+                    }
+
+                    .W5 {
+                        vertical-align: baseline;
+                        font-size: 100%;
+                        font-weight: bold;
+                        font-style: normal;
+                        text-decoration: underline;
+                    }
+
+                    .W6 {
+                        vertical-align: baseline;
+                        font-size: 100%;
+                        font-weight: bold;
+                        font-style: italic;
+                        text-decoration: none;
+                    }
+
+                    .W7 {
+                        vertical-align: baseline;
+                        font-size: 100%;
+                        font-weight: bold;
+                        font-style: italic;
+                        text-decoration: underline;
+                    }
+
+                    .W8 {
+                        vertical-align: sub;
+                        line-height: 100%;
+                        font-size: 100%;
+                        font-weight: normal;
+                        font-style: normal;
+                        text-decoration: none;
+                    }
+
+                    .W9 {
+                        vertical-align: super;
+                        line-height: 100%;
+                        font-size: 100%;
+                        font-weight: normal;
+                        font-style: normal;
+                        text-decoration: none;
+                    }
+
+                    .WA {
+                        vertical-align: sub;
+                        line-height: 100%;
+                        font-size: 100%;
+                        font-weight: bold;
+                        font-style: normal;
+                        text-decoration: none;
+                    }
+
+                    .WB {
+                        vertical-align: super;
+                        line-height: 100%;
+                        font-size: 100%;
+                        font-weight: bold;
+                        font-style: normal;
+                        text-decoration: none;
+                    }
+
+                    .WC {
+                        vertical-align: baseline;
+                        font-size: 100%;
+                        font-weight: normal;
+                        font-style: normal;
+                        text-decoration: line-through;
+                    }
+
+                    .WD {
+                        vertical-align: baseline;
+                        font-size: 100%;
+                        font-weight: normal;
+                        font-style: italic;
+                        text-decoration: line-through;
+                    }
+
+                    .WE {
+                        vertical-align: baseline;
+                        font-size: 100%;
+                        font-weight: bold;
+                        font-style: normal;
+                        text-decoration: line-through;
+                    }
+
+                    .WF {
+                        vertical-align: baseline;
+                        font-size: 100%;
+                        font-weight: bold;
+                        font-style: italic;
+                        text-decoration: line-through;
+                    }
+
+                    table {
+                        table-layout: fixed;
+                        margin: 0px 0px 4px 0px;
+                        padding: 0;
+                        text-indent: 0;
+                        text-align: left;
+                        box-sizing: border-box;
+                        border-collapse: collapse;
+                        border-spacing: 0;
+                        border-width: 1px;
+                        border-color: #a0a0a0;
+                        border-style: none;
+                    }
+
+                    td {
+                        empty-cells: show;
+                        vertical-align: top;
+                        margin: 0;
+                        padding: 6px 4px 6px 4px;
+                        text-indent: 0;
+                        text-align: left;
+                        border-spacing: 0;
+                        border-width: 1px;
+                        border-color: #a0a0a0;
+                        border-style: none;
+                    }
+
+                    td div {
+                        margin: 0;
+                        border: 0;
+                        padding: 0;
+                        display: inline-block;
+                        -ms-writing-mode: tb-rl;
+                        -ms-transform: rotate(180deg);
+                    }
+
+                    .TB0 td,
+                    .G02L td,
+                    .G02R td,
+                    .G02C td,
+                    .G02J td,
+                    .G04L td,
+                    .G04R td,
+                    .G04C td,
+                    .G04J td {
+                        border-style: none;
+                    }
+
+                    .TB1 td,
+                    .G12L td,
+                    .G12R td,
+                    .G12C td,
+                    .G12J td,
+                    .G14L td,
+                    .G14R td,
+                    .G14C td,
+                    .G14J td {
+                        border-style: solid;
+                    }
+
+                    table.G22L tr td,
+                    table.G22R tr td,
+                    table.G22C tr td,
+                    table.G22J tr td,
+                    table.G24L tr td,
+                    table.G24R tr td,
+                    table.G24C tr td,
+                    table.G24J tr td {
+                        border-style: solid;
+                    }
+
+                    table.G32L tr td,
+                    table.G32R tr td,
+                    table.G32C tr td,
+                    table.G32J tr td,
+                    table.G34L tr td,
+                    table.G34R tr td,
+                    table.G34C tr td,
+                    table.G34J tr td {
+                        border-style: none;
+                    }
+
+                    table td.X0 {
+                        border-style: none;
+                    }
+
+                    table td.X1 {
+                        border-style: solid none none none;
+                    }
+
+                    table td.X2 {
+                        border-style: none solid none none;
+                    }
+
+                    table td.X3 {
+                        border-style: solid solid none none;
+                    }
+
+                    table td.X4 {
+                        border-style: none none solid none;
+                    }
+
+                    table td.X5 {
+                        border-style: solid none solid none;
+                    }
+
+                    table td.X6 {
+                        border-style: none solid solid none;
+                    }
+
+                    table td.X7 {
+                        border-style: solid solid solid none;
+                    }
+
+                    table td.X8 {
+                        border-style: none none none solid;
+                    }
+
+                    table td.X9 {
+                        border-style: solid none none solid;
+                    }
+
+                    table td.XA {
+                        border-style: none solid none solid;
+                    }
+
+                    table td.XB {
+                        border-style: solid solid none solid;
+                    }
+
+                    table td.XC {
+                        border-style: none none solid solid;
+                    }
+
+                    table td.XD {
+                        border-style: solid none solid solid;
+                    }
+
+                    table td.XE {
+                        border-style: none solid solid solid;
+                    }
+
+                    table td.XF {
+                        border-style: solid;
+                    }
+
+                    td,
+                    td p,
+                    .TAL td,
+                    .TAL td p,
+                    tr td p.L,
+                    .G02L td,
+                    .G02L td p,
+                    .G04L td,
+                    .G04L td p,
+                    .G12L td,
+                    .G12L td p,
+                    .G14L td,
+                    .G14L td p,
+                    .G22L td,
+                    .G22L td p,
+                    .G24L td,
+                    .G24L td p,
+                    .G32L td,
+                    .G32L td p,
+                    .G34L td,
+                    .G34L td p {
+                        text-indent: 0;
+                        margin: 0;
+                        max-width: 100%;
+                        text-align: left;
+                    }
+
+                    .TAC td,
+                    .TAC td p,
+                    tr td p.C,
+                    .G02C td,
+                    .G02C td p,
+                    .G04C td,
+                    .G04C td p,
+                    .G12C td,
+                    .G12C td p,
+                    .G14C td,
+                    .G14C td p,
+                    .G22C td,
+                    .G22C td p,
+                    .G24C td,
+                    .G24C td p,
+                    .G32C td,
+                    .G32C td p,
+                    .G34C td,
+                    .G34C td p {
+                        text-indent: 0;
+                        margin: 0;
+                        max-width: 100%;
+                        text-align: center
+                    }
+
+                    .TAR td,
+                    .TAR td p,
+                    tr td p.R,
+                    .G02R td,
+                    .G02R td p,
+                    .G04R td,
+                    .G04R td p,
+                    .G12R td,
+                    .G12R td p,
+                    .G14R td,
+                    .G14R td p,
+                    .G22R td,
+                    .G22R td p,
+                    .G24R td,
+                    .G24R td p,
+                    .G32R td,
+                    .G32R td p,
+                    .G34R td,
+                    .G34R td p {
+                        text-indent: 0;
+                        margin: 0;
+                        max-width: 100%;
+                        text-align: right;
+                    }
+
+                    .TAJ td,
+                    .TAJ td p,
+                    tr td p.J,
+                    .G02J td,
+                    .G02J td p,
+                    .G04J td,
+                    .G04J td p,
+                    .G12J td,
+                    .G12J td p,
+                    .G14J td,
+                    .G14J td p,
+                    .G22J td,
+                    .G22J td p,
+                    .G24J td,
+                    .G24J td p,
+                    .G32J td,
+                    .G32J td p,
+                    .G34J td,
+                    .G34J td p {
+                        text-indent: 0;
+                        margin: 0;
+                        max-width: 100%;
+                        text-align: justify;
+                    }
+
+                    tr td p.P {
+                        text-indent: 38px;
+                        margin: 0;
+                        max-width: 100%;
+                        text-align: justify;
+                    }
+
+                    tr td p.N {
+                        text-indent: 38px;
+                        margin: 0;
+                        max-width: 100%;
+                        text-align: justify;
+                        font-size: 16px;
+                    }
+
+                    tr td p.I {
+                        text-indent: 0;
+                        margin: 0px 0px 0px 38px;
+                        max-width: 100%;
+                        text-align: left;
+                    }
+
+                    tr td p.K {
+                        text-indent: 0;
+                        margin: 0px 0px 0px 38px;
+                        max-width: 100%;
+                        text-align: justify;
+                    }
+
+                    tr td p.H {
+                        text-indent: -81px;
+                        margin: 0px 38px 0px 119px;
+                        max-width: 100%;
+                        text-align: left;
+                        font-weight: bold;
+                    }
+
+                    tr td p.T {
+                        text-indent: 0;
+                        margin: 0px 38px 0px 38px;
+                        max-width: 100%;
+                        text-align: center;
+                        font-weight: bold;
+                    }
+
+                    tr.holder td {
+                        visibility: hidden;
+                        height: 0;
+                        border-style: none;
+                        padding: 0;
+                        font-size: 4px;
+                        line-height: 0.125em;
+                    }
+
+                    .G02L,
+                    .G02C,
+                    .G02R,
+                    .G02J,
+                    .G12L,
+                    .G12C,
+                    .G12R,
+                    .G12J,
+                    .G22L,
+                    .G22C,
+                    .G22R,
+                    .G22J,
+                    .G32L,
+                    .G32C,
+                    .G32R,
+                    .G32J {
+                        font-size: 16px;
+                    }
+
+                    tr td p.M {
+                        max-width: 100%;
+                        text-align: left;
+                        font-size: 14px;
+                        font-family: "courier new", courier, monospace;
+                    }
+
+                    div.clip {
+                        page: any;
+                    }
+
+                    div.fragments {
+                        page: any;
+                    }
+
+                    input.cap {
+                        position: absolute;
+                        opacity: 0;
+                        height: 0;
+                        width: 0;
+                    }
+
+                    input.cap+label {
+                        display: block;
+                        cursor: pointer;
+                        text-indent: 0;
+                        margin-left: 45px;
+                        margin-right: 45px;
+                        max-width: 590px;
+                        text-align: center;
+                        text-decoration: underline;
+                        color: #1111ee;
+                    }
+
+                    input.cap+label:before {
+                        content: "";
+                        display: inline-block;
+                        padding: 0;
+                        margin-right: 6px;
+                        border-radius: 3px;
+                        min-height: 15px;
+                        min-width: 15px;
+                        font-size: 15px;
+                        line-height: 15px;
+                        vertical-align: middle;
+                        background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAABBSURBVDhPY3zw4P9/BjIBE5QmCwxSzYaG76Es7GDgnI0RVficev68IJQFAXjjGWQQugZkMIj8TAoYOGdToJmBAQCgSRZk7J2AQAAAAABJRU5ErkJggg==");
+                    }
+
+                    input.cap:checked+label:before {
+                        background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAAAxSURBVDhPY3zw4P9/BjIBE5QmC4xqJhFgRJWh4XsoCxOcPy8IZUHAaDyTCAZKMwMDAC3CDlahtN6NAAAAAElFTkSuQmCC");
+                    }
+
+                    input.cap:not(:checked)+label+.C {
+                        display: none;
+                    }
+
+                    input.cap:not(:checked)+label+.C+.C {
+                        display: none;
+                    }
+
+                    span.mark,
+                    span.markx {
+                        color: #1111ee;
+                        font-weight: normal;
+                        font-style: italic;
+                        text-decoration: none;
+                    }
+
+                    /*CSS*/
+                    -->
+                <!--
+
+@media screen{
+div.fixedcomment{margin-left:-12px;}
+span.ed,span.edx{color:#1111ee;}
+span.edx{background-color:#f0f0f0;}
+span.markx{background-color:#f0f0f0;}
+.F span.mark, .F span.markx, .A span.mark, .A span.markx{background-color:transparent; color:#333333;}
+.cmd, a{cursor:pointer; color:#1111ee; font-weight:normal; font-style:normal; text-decoration:underline;}
+.W8 .cmd, .W8 a{cursor:pointer; color:#1111ee; font-weight:normal; font-style:normal; text-decoration:underline;
+vertical-align:bottom; line-height:100%; font-size:11px; font-weight:normal; font-style:normal;}
+.W9 .cmd, .W9 a{cursor:pointer; color:#1111ee; font-weight:normal; font-style:normal; text-decoration:underline;
+vertical-align:top; line-height:100%; font-size:11px; font-weight:normal; font-style:normal;}
+.cmdx{background-color:#ead099;}
+.cmdg{background-color:#00e889; color:#000; text-decoration:none;}
+.cmdr{background-color:#ff8989; color:#000; text-decoration:none;}
+.W8{vertical-align:bottom; line-height:100%; font-size:11px; font-weight:normal; font-style:normal; text-decoration:none;}
+.W9{vertical-align:top; line-height:100%; font-size:11px; font-weight:normal; font-style:normal; text-decoration:none;}
+.WA{vertical-align:bottom; line-height:100%; font-size:11px; font-weight:bold; font-style:normal; text-decoration:none;}
+.WB{vertical-align:top; line-height:100%; font-size:11px; font-weight:bold; font-style:normal; text-decoration:none;}
+}
+@media print{
+body{margin:0; border:0; padding:0; color:#333333; background-color:#ffffff; widows:1; orphans:1; font-size:13.5pt; font-family:"times new roman", times, serif; line-height:125%; word-wrap:break-word;}
+div.comment{display:block; width:100%; font-size:11pt; margin:10pt 0pt; padding:0;}
+div.fixedcomment{display:block; width:100%; font-size:11pt; margin:10pt 0pt; padding:0;}
+div.fixedcomment:before{display:none; position:static; width:100%; font-size:11pt; margin:10pt 0pt; padding:0;}
+div.clip{width:100%; font-size:11pt; font-family:tahoma, arial, sans-serif;}
+div.time{padding:0ex 0ex 1ex 0ex;}
+div.fragments{min-height:5%; width:100%;}
+p, p.P{text-indent:7ex; max-width:100%; text-align:justify; margin:5pt 0pt; border:0; padding:0;}
+p.N{text-indent:8ex; max-width:100%; text-align:justify; margin:5pt 0pt; border:0; padding:0;}
+p.I{text-indent:0; margin-left:7ex; max-width:100%; text-align:left;}
+p.K{text-indent:0; margin-left:7ex; max-width:100%; text-align:justify;}
+p.H{text-indent:-10ex; margin-left:17ex; margin-right:7ex; max-width:100%; text-align:left; font-weight:bold;}
+p.S{text-indent:0; margin-left:auto; margin-right:0; max-width:40ex; text-align:center;}
+p.C{text-indent:0; margin-left:5ex; margin-right:5ex; max-width:100%; text-align:center;}
+p.T{text-indent:0; margin-left:5ex; margin-right:5ex; max-width:100%; text-align:center; font-weight:bold;}
+p.M{white-space:pre; overflow-wrap:normal; text-indent:0; max-width:100%; text-align:left; font-size:12.5pt; font-family:"courier new", courier, monospace;}
+p.F{text-indent:0; margin-left:7ex; max-width:100%; text-align:left; border-left:5pt solid #949494; padding-left:5pt;}
+.mark,.markx{font-weight:normal; font-style:italic; text-decoration:none; color:#333333;}
+.F span.mark, .F span.markx, .A span.mark, .A span.markx{background-color:transparent; color:#333333;}
+.cmd, a{color:#1111ee; font-weight:normal; font-style:normal; text-decoration:none;}
+.W8 .cmd, .W8 a{color:#1111ee; font-weight:normal; font-style:normal; text-decoration:none;
+vertical-align:bottom; line-height:100%; font-size:9pt; font-weight:normal; font-style:normal;}
+.W9 .cmd, .W9 a{color:#1111ee; font-weight:normal; font-style:normal; text-decoration:none;
+vertical-align:top; line-height:100%; font-size:9pt; font-weight:normal; font-style:normal;}
+.W8{vertical-align:bottom; line-height:100%; font-size:9pt; font-weight:normal; font-style:normal; text-decoration:none;}
+.W9{vertical-align:top; line-height:100%; font-size:9pt; font-weight:normal; font-style:normal; text-decoration:none;}
+.WA{vertical-align:bottom; line-height:100%; font-size:9pt; font-weight:bold; font-style:normal; text-decoration:none;}
+.WB{vertical-align:top; line-height:100%; font-size:9pt; font-weight:bold; font-style:normal; text-decoration:none;}
+.G02L, .G02C, .G02R, .G02J, .G12L, .G12C, .G12R, .G12J, .G22L, .G22C, .G22R, .G22J{font-size:12pt;}
+tr td p.M{max-width:100%; text-align:left; font-size:12pt; font-family:"courier new", courier, monospace; page-break-inside:avoid;}
+}
+@media print and (orientation:landscape){
+table{font-size:12pt;}
+p.M{font-size:11pt;}
+}
+@media screen{
+p.cmp0:before, p.cmp1:before, tr.cmp0>td:first-child:before, tr.cmp1>td:first-child:before{position:absolute; z-index:-1; display:none; left:0; width:12px; content:"›"; text-indent:4px; text-align:left; text-decoration:none; background-color:#808080; color:#fffefb; font-size:100%; font-weight:bold; font-style:normal; font-family:"times new roman", times, serif;}
+p.cmp1:before, tr.cmp1>td:first-child:before{display:block;}
+}
+div.ihintv{margin-top:6px; padding:2px 8px 7px 10px; border-radius:0px 0px 2px 2px; text-indent:0; text-align:justify; background-color:#d5d5d5; color:#333333;}
+div.ihint0, div.ihint1{display:none; position:fixed; z-index:9; left:0; top:0; border-radius:4px; border:2px solid #808080; padding-top:2px; text-indent:10px; text-align:left; background-color:#808080; color:#fffefb; box-shadow:2px 2px 2px #a0a0a0; font-size:16px; font-family:tahoma, arial, sans-serif; line-height:125%; word-wrap:break-word;}
+@media screen{div.ihint1{display:block;}}
+-->
+                </style>
+            </head>
+
+            <body>
+                <p> </p>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <p class="C">РОССИЙСКАЯ ФЕДЕРАЦИЯ</p>
+                <p>&nbsp;</p>
+                <p class="T">ФЕДЕРАЛЬНЫЙ ЗАКОН</p>
+                <p>&nbsp;</p>
+                <p class="T">О развитии технологических компаний в Российской Федерации</p>
+                <p>&nbsp;</p>
+                <p class="I">Принят Государственной
+                    Думой&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;26&nbsp;июля
+                    2023&nbsp;года</p>
+                <p class="I">Одобрен Советом
+                    Федерации&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;28&nbsp;июля
+                    2023&nbsp;года</p>
+                <p>&nbsp;</p>
+                <p class="H">Статья 1<span class="W9" style="">тест1</span>. Предмет регулирования настоящего Федерального закона</p>
+                <p>&nbsp;</p>
+                <p>Настоящий Федеральный закон определяет правовые основы деятельности технологических компаний в
+                    Российской Федерации.</p>
+                <p>&nbsp;</p>
+                <p class="H">Статья 2. Основные понятия, используемые в настоящем Федеральном законе</p>
+                <p>&nbsp;</p>
+                <p>1.&nbsp;Для целей настоящего Федерального закона используются следующие основные понятия:</p>
+                <p>1<span class="W9" style="">1-1</span>)&nbsp;инновационная технология&nbsp;- совокупность результатов интеллектуальной деятельности,
+                    используемых для разработки и (или) производства новой или значительно улучшенной продукции
+                    (оказания услуг, выполнения работ), а также обеспечивающих экономическую эффективность применения
+                    (внедрения) такой продукции (оказания услуг, выполнения работ), повышение производительности труда и
+                    (или) создание новых рынков товаров, работ, услуг;</p>
+                <p>2<span class="W8" style="">2-1</span>)&nbsp;технологическая компания&nbsp;- российская коммерческая организация, осуществляющая
+                    деятельность по разработке и (или) производству продукции (оказанию услуг, выполнению работ) с
+                    использованием инновационных технологий;</p>
+                <p>3)&nbsp;малая технологическая компания&nbsp;- технологическая компания, которая соответствует
+                    условиям, установленным частью 1 статьи 5 настоящего Федерального закона, и сведения о которой
+                    включены в реестр малых технологических компаний (далее&nbsp;- реестр);</p>
+                <p>4)&nbsp;категория технологической компании&nbsp;- совокупность технологических компаний,
+                    соответствующих общим для них условиям и признакам, устанавливаемым Правительством Российской
+                    Федерации в соответствии с пунктом 1 части 2 статьи 3 настоящего Федерального закона;</p>
+                <p>5)&nbsp;вид малой технологической компании&nbsp;- совокупность малых технологических компаний,
+                    соответствующих общим для них критериям и показателям, устанавливаемым Правительством Российской
+                    Федерации в соответствии с пунктом 9 части 1 статьи 3 настоящего Федерального закона;</p>
+                <p>6)&nbsp;центр экспертизы малых технологических компаний&nbsp;- российская организация, проводящая
+                    экспертизу малых технологических компаний и осуществляющая иную деятельность при отнесении
+                    технологической компании к малой технологической компании, предусмотренную настоящим Федеральным
+                    законом, обладающая высоким уровнем компетенций и опыта в области проведения экспертизы
+                    инновационных проектов, из числа федеральных институтов инновационного развития и (или)
+                    некоммерческих организаций, являющихся субъектами государственной поддержки инновационной
+                    деятельности в форме финансового обеспечения, в том числе за счет средств федерального бюджета,
+                    включенная в утвержденный Правительством Российской Федерации перечень центров экспертизы малых
+                    технологических компаний.</p>
+                <p>2.&nbsp;Иные понятия, используемые в настоящем Федеральном законе, применяются в значении, в котором
+                    они используются в Федеральном законе <a class="doclink"
+                        href="?docbody=&amp;prevDoc=605786811&amp;backlink=1&amp;&amp;nd=102043112"
+                        onclick="window.parent.location.href=this.href" target="contents"><span class="cmd"
+                            style="">от&nbsp;23&nbsp;августа 1996&nbsp;года №&nbsp;127-ФЗ</span></a> &quot;О&nbsp;науке
+                    и государственной научно-технической политике&quot;.</p>
+                <p>&nbsp;</p>
+                <p class="H">Статья 3. Полномочия Правительства Российской Федерации и федеральных органов
+                    исполнительной власти в сфере развития технологических компаний и малых технологических компаний</p>
+                <p>&nbsp;</p>
+                <p>1.&nbsp;К полномочиям Правительства Российской Федерации в сфере развития технологических компаний
+                    относятся: </p>
+                <p>1)&nbsp;разработка и реализация в Российской Федерации единой государственной политики в сфере
+                    развития технологических компаний; </p>
+                <p>2)&nbsp;определение предельного значения выручки от реализации товаров (оказания услуг, выполнения
+                    работ) как собственного производства, так и ранее приобретенных, выручки от реализации имущественных
+                    прав (далее&nbsp;- объем выручки), в том числе по основному виду экономической деятельности,
+                    технологической компании за предшествующий календарный год в целях отнесения технологической
+                    компании к малой технологической компании;</p>
+                <p>3)&nbsp;утверждение перечня видов экономической деятельности для малых технологических компаний в
+                    соответствии с Общероссийским классификатором видов экономической деятельности; </p>
+                <p>4)&nbsp;утверждение порядка отнесения технологических компаний к малым технологическим компаниям и
+                    прекращения статуса малых технологических компаний;</p>
+                <p>5)&nbsp;утверждение перечня центров экспертизы малых технологических компаний;</p>
+                <p>6)&nbsp;включение российских организаций в перечень центров экспертизы малых технологических компаний
+                    и исключение российских организаций из указанного перечня;</p>
+                <p>7)&nbsp;определение минимальных значений показателей оценки, указанных в пунктах 3 и 4 части 6 статьи
+                    6 настоящего Федерального закона, в зависимости от вида малой технологической компании и основного
+                    вида экономической деятельности малой технологической компании;</p>
+                <p>8)&nbsp;утверждение порядка формирования и ведения реестра;</p>
+                <p>9)&nbsp;определение видов малых технологических компаний в зависимости от объема выручки, в том числе
+                    по основному виду экономической деятельности, за предшествующий календарный год;</p>
+                <p>10)&nbsp;определение допустимого срока отсутствия факта государственной регистрации результата
+                    (одного из результатов) интеллектуальной деятельности, наличие заявки на государственную регистрацию
+                    которого является основанием признания соответствия технологической компании показателю оценки,
+                    указанному в пункте 1 части 6 статьи 6 настоящего Федерального закона;</p>
+                <p>11)&nbsp;утверждение порядка информационного взаимодействия между реестром, информационной системой
+                    &quot;Единый реестр конечных получателей государственной поддержки инновационной деятельности&quot;
+                    (далее&nbsp;- Единый реестр), государственными информационными системами, иными информационными
+                    системами, используемыми государственными органами, и государственными информационными ресурсами,
+                    информационными системами центров экспертизы малых технологических компаний с использованием
+                    инфраструктуры, обеспечивающей информационно-технологическое взаимодействие информационных систем,
+                    используемых для предоставления государственных и муниципальных услуг и исполнения государственных и
+                    муниципальных функций в электронной форме; </p>
+                <p>12)&nbsp;утверждение перечня случаев, порядка и сроков предоставления сведений из реестра.</p>
+                <p>2.&nbsp;Правительство Российской Федерации вправе:</p>
+                <p>1)&nbsp;определять категории технологических компаний, условия и порядок отнесения технологической
+                    компании к соответствующей категории технологических компаний, способ подтверждения статуса
+                    технологических компаний, соответствующего категории технологических компаний, основания и порядок
+                    прекращения такого статуса, принимать решение о ведении реестра технологических компаний
+                    соответствующей категории технологических компаний, а также утверждать порядок его формирования и
+                    ведения, в том числе в целях осуществления государственной поддержки технологических компаний
+                    соответствующей категории технологических компаний;</p>
+                <p>2)&nbsp;определять требования к технологическим компаниям, включая предельное значение объема
+                    выручки, в том числе по основному виду экономической деятельности, технологической компании за
+                    предшествующий календарный год, в целях осуществления государственной поддержки технологических
+                    компаний;</p>
+                <p>3)&nbsp;определять особенности осуществления контроля целевого использования и (или) проведения
+                    проверок порядка и условий предоставления средств федерального бюджета и (или) бюджета субъекта
+                    Российской Федерации при осуществлении государственной поддержки технологических компаний в форме
+                    предоставления финансовой поддержки, определения целевого характера использования указанных средств,
+                    оценки достижения результатов их предоставления;</p>
+                <p>4)&nbsp;определять особенности осуществления государственной поддержки малых технологических
+                    компаний;</p>
+                <p>5)&nbsp;определять особенности отнесения технологической компании к малой технологической компании,
+                    соответствующей условиям, указанным в пунктах 1, 2, подпункте &quot;а&quot; пункта 3 части 1 статьи
+                    5 настоящего Федерального закона;</p>
+                <p>6)&nbsp;возлагать на центры экспертизы малых технологических компаний функции по проведению проверки
+                    соответствия технологической компании условиям, указанным в пунктах 1 и 2 части 1 статьи 5
+                    настоящего Федерального закона;</p>
+                <p>7)&nbsp;определять дополнительные показатели оценки критериев, указанных в подпункте &quot;б&quot;
+                    пункта 3 части 1 статьи 5 настоящего Федерального закона, а также показатели, детализирующие
+                    показатели оценки указанных критериев, установленных частями 6 и 7 статьи 6 настоящего Федерального
+                    закона;</p>
+                <p>8)&nbsp;определять случаи, при которых экспертное заключение о соответствии технологической компании
+                    критериям, указанным в подпункте &quot;б&quot; пункта 3 части 1 статьи 5 настоящего Федерального
+                    закона, действует более трех лет;</p>
+                <p>9)&nbsp;определять перечень и состав дополнительных сведений, включаемых в реестр.</p>
+                <p>3.&nbsp;К полномочиям федерального органа исполнительной власти, осуществляющего функции по выработке
+                    государственной политики и нормативно-правовому регулированию в сфере развития предпринимательской
+                    деятельности (далее&nbsp;- уполномоченный орган), относятся:</p>
+                <p>1)&nbsp;отнесение технологических компаний к малым технологическим компаниям и прекращение статуса
+                    малых технологических компаний;</p>
+                <p>2)&nbsp;формирование и ведение реестра;</p>
+                <p>3)&nbsp;утверждение порядка определения размера платы для технологических компаний за проведение
+                    экспертизы малых технологических компаний;</p>
+                <p>4)&nbsp;утверждение формы экспертного заключения о соответствии (несоответствии) технологической
+                    компании критериям, указанным в подпункте &quot;б&quot; пункта 3 части 1 статьи&nbsp;5 настоящего
+                    Федерального закона.</p>
+                <p>&nbsp;</p>
+                <p class="H">Статья 4. Государственная поддержка технологических компаний и малых технологических
+                    компаний</p>
+                <p>&nbsp;</p>
+                <p>1.&nbsp;Государственная поддержка технологических компаний осуществляется органами государственной
+                    власти Российской Федерации и субъектов Российской Федерации, а также соответствующими
+                    организациями, через которые может осуществляться такая поддержка (далее&nbsp;- субъекты
+                    государственной поддержки технологических компаний).</p>
+                <p>2.&nbsp;Государственная поддержка технологических компаний может осуществляться в следующих формах:
+                </p>
+                <p>1)&nbsp;предоставление льгот по уплате налогов, сборов, страховых взносов, установленных
+                    законодательством Российской Федерации о налогах и сборах, и по уплате таможенных платежей,
+                    установленных таможенным законодательством Таможенного союза в рамках ЕврАзЭС и законодательством
+                    Российской Федерации о таможенном деле;</p>
+                <p>2)&nbsp;предоставление информационной поддержки;</p>
+                <p>3)&nbsp;предоставление консультационной поддержки;</p>
+                <p>4)&nbsp;предоставление финансовой поддержки в соответствии с бюджетным законодательством Российской
+                    Федерации с учетом обоснованного риска технологической компании при недостижении результата такой
+                    поддержки;</p>
+                <p>5)&nbsp;поддержка экспорта;</p>
+                <p>6)&nbsp;формирование спроса на инновационную и (или) высокотехнологическую продукцию (работы,
+                    услуги); </p>
+                <p>7)&nbsp;иные формы, установленные законодательством Российской Федерации, законодательством субъектов
+                    Российской Федерации.</p>
+                <p>3.&nbsp;Субъекты государственной поддержки технологических компаний при осуществлении государственной
+                    поддержки технологических компаний в форме предоставления финансовой поддержки проводят экспертизу
+                    заявок технологических компаний на ее осуществление, заявок на реализацию проектов технологических
+                    компаний и (или) иную экспертизу, в том числе с привлечением при необходимости по решению субъекта
+                    государственной поддержки технологических компаний внешних экспертов и (или) экспертных организаций,
+                    если необходимость проведения экспертизы (экспертиз) при осуществлении государственной поддержки
+                    технологических компаний в форме предоставления финансовой поддержки предусмотрена нормативным
+                    правовым актом, устанавливающим порядок осуществления такой поддержки.</p>
+                <p>4.&nbsp;Средства федерального бюджета и бюджетов субъектов Российской Федерации на осуществление
+                    государственной поддержки технологических компаний носят целевой характер в соответствии с
+                    законодательством Российской Федерации, законодательством субъектов Российской Федерации и не могут
+                    быть использованы на другие цели.</p>
+                <p>5.&nbsp;Органы государственной власти Российской Федерации и субъектов Российской Федерации
+                    осуществляют контроль целевого использования средств федерального бюджета и (или) бюджета субъекта
+                    Российской Федерации и проводят проверки порядка и условий их предоставления при осуществлении
+                    государственной поддержки технологических компаний в форме предоставления финансовой поддержки, в
+                    том числе в части достижения результатов предоставления указанных средств, если они установлены при
+                    их предоставлении, в соответствии с бюджетным законодательством Российской Федерации и (или)
+                    нормативным правовым актом, устанавливающим порядок осуществления такой поддержки (при наличии), с
+                    учетом особенностей, если они определены Правительством Российской Федерации в соответствии с
+                    пунктом 3 части 2 статьи 3 настоящего Федерального закона.</p>
+                <p>6.&nbsp;Малая технологическая компания, получившая финансовую поддержку, предоставляет субъекту
+                    государственной поддержки технологических компаний в соответствии с бюджетным законодательством
+                    Российской Федерации и (или) нормативными правовыми актами, регулирующими бюджетные отношения,
+                    отчетность об осуществлении соответствующих расходов, о достижении результатов предоставления
+                    финансовой поддержки, если они установлены при ее предоставлении, и иную отчетность, предусмотренную
+                    бюджетным законодательством Российской Федерации и (или) нормативным правовым актом, устанавливающим
+                    порядок осуществления такой поддержки (при наличии). </p>
+                <p>7.&nbsp;В случае нецелевого использования технологической компанией средств федерального бюджета или
+                    бюджета субъекта Российской Федерации, предоставленных ей при осуществлении государственной
+                    поддержки технологических компаний в форме предоставления финансовой поддержки, и (или) нарушения
+                    условий и (или) порядка осуществления такой поддержки, определенных соответственно законодательством
+                    Российской Федерации или законодательством субъектов Российской Федерации, в том числе нормативным
+                    правовым актом, устанавливающим порядок осуществления такой поддержки (при наличии), технологическая
+                    компания обязана произвести возврат указанных средств, полученных ею при осуществлении такой
+                    поддержки, в доход бюджета бюджетной системы Российской Федерации, из которого предоставлены
+                    указанные средства, в объеме, выявленном по итогам проверок, проведенных соответствующим субъектом
+                    государственной поддержки технологических компаний и (или) органами государственного финансового
+                    контроля.</p>
+                <p>8.&nbsp;Неурегулированные разногласия между субъектом государственной поддержки технологических
+                    компаний и технологической компанией по вопросу наличия нецелевого использования средств
+                    федерального бюджета или бюджета субъекта Российской Федерации, предоставленных ей при осуществлении
+                    государственной поддержки технологических компаний в форме предоставления финансовой поддержки, и
+                    (или) нарушения условий и (или) порядка осуществления такой поддержки, а также объема возврата
+                    указанных средств разрешаются в судебном порядке.</p>
+                <p>9.&nbsp;Законами субъектов Российской Федерации, нормативными правовыми актами высших исполнительных
+                    органов субъектов Российской Федерации могут устанавливаться особенности осуществления
+                    государственной поддержки малых технологических компаний за счет средств бюджетов субъектов
+                    Российской Федерации. </p>
+                <p>&nbsp;</p>
+                <p class="H">Статья 5. Отнесение технологических компаний к малым технологическим компаниям, включение
+                    сведений о технологической компании в реестр и прекращение статуса малой технологической компании
+                </p>
+                <p>&nbsp;</p>
+                <p>1.&nbsp;К малой технологической компании относится технологическая компания, соответствующая
+                    следующим условиям:</p>
+                <p>1)&nbsp;объем выручки, в том числе по основному виду экономической деятельности, технологической
+                    компании за предшествующий календарный год не превышает предельное значение объема выручки, в том
+                    числе по основному виду экономической деятельности, технологической компании за предшествующий
+                    календарный год, определенное Правительством Российской Федерации в соответствии с пунктом 2 части 1
+                    статьи 3 настоящего Федерального закона;</p>
+                <p>2)&nbsp;основной вид экономической деятельности технологической компании соответствует одному из
+                    видов экономической деятельности, включенных в перечень, утвержденный Правительством Российской
+                    Федерации в соответствии с пунктом 3 части 1 статьи 3 настоящего Федерального закона;</p>
+                <p>3)&nbsp;выполняется одно из следующих требований:</p>
+                <p>а)&nbsp;сведения о технологической компании включены в Единый реестр и она получала государственную
+                    поддержку инновационной деятельности в форме предоставления льгот по уплате налогов, сборов,
+                    таможенных платежей и (или) в форме финансового обеспечения (в части предоставления субсидий,
+                    грантов, кредитов, займов и взносов в уставный капитал) не позднее чем за три года до даты включения
+                    уполномоченным органом сведений о технологической компании в реестр; </p>
+                <p>б)&nbsp;технологическая компания соответствует на основании результатов экспертизы малых
+                    технологических компаний (экспертного заключения) следующим критериям отнесения технологической
+                    компании к малой технологической компании:</p>
+                <p>соответствие уровня научно-технического потенциала технологической компании уровню, определенному в
+                    порядке, установленном настоящим Федеральным законом;</p>
+                <p>соответствие возможностей технологической компании для создания и (или) применения (внедрения)
+                    инновационных технологий при разработке и (или) производстве продукции (оказании услуг, выполнении
+                    работ) уровню, определенному в порядке, установленном настоящим Федеральным законом.</p>
+                <p>2.&nbsp;В целях информационного обеспечения развития малых технологических компаний и их
+                    государственной поддержки создается реестр в составе государственной информационной системы
+                    &quot;Экономика&quot;, оператором которой является уполномоченный орган.</p>
+                <p>3.&nbsp;Обладателем информации, содержащейся в реестре, является Российская Федерация. Исключительные
+                    права на результаты интеллектуальной деятельности, в том числе на программы для электронных
+                    вычислительных машин и базы данных, возникшие в результате создания, развития и эксплуатации
+                    реестра, принадлежат Российской Федерации.</p>
+                <p>4.&nbsp;Отнесение технологической компании к малой технологической компании осуществляется путем
+                    включения уполномоченным органом сведений о технологической компании, соответствующей условиям,
+                    указанным в части 1 настоящей статьи, в реестр в порядке, утвержденном Правительством Российской
+                    Федерации в соответствии с пунктом 4 части 1 статьи 3 настоящего Федерального закона:</p>
+                <p>1)&nbsp;в отношении технологической компании, соответствующей условиям, указанным в пунктах 1, 2,
+                    подпункте &quot;а&quot; пункта 3 части 1 настоящей статьи,&nbsp;- без заявления технологической
+                    компании на основании результатов проверки соответствия технологической компании условиям, указанным
+                    в пунктах 1 и 2 части 1 настоящей статьи, с учетом особенностей, установленных Правительством
+                    Российской Федерации в соответствии с пунктом 5 части 2 статьи 3 настоящего Федерального закона;</p>
+                <p>2)&nbsp;в отношении технологической компании, соответствующей условиям и критериям, указанным в
+                    пунктах 1, 2, подпункте &quot;б&quot; пункта 3 части 1 настоящей статьи,&nbsp;- по заявлению
+                    технологической компании об отнесении ее к малой технологической компании и на основании результатов
+                    экспертизы малых технологических компаний (экспертного заключения) на соответствие технологической
+                    компании критериям, указанным в подпункте &quot;б&quot; пункта 3 части 1 настоящей статьи.</p>
+                <p>5.&nbsp;Проверка соответствия технологической компании условиям, указанным в пунктах 1 и 2 части 1
+                    настоящей статьи, проводится уполномоченным органом или центром экспертизы малых технологических
+                    компаний в случае возложения на него функции по проведению такой проверки Правительством Российской
+                    Федерации в порядке и сроки, определенные Правительством Российской Федерации. Соответствующий вид
+                    экономической деятельности технологической компании признается основным при условии, что в составе
+                    сведений о ней в едином государственном реестре юридических лиц содержится соответствующий код по
+                    Общероссийскому классификатору видов экономической деятельности в качестве основного вида
+                    деятельности по состоянию на дату внесения сведений о технологической компании в реестр.</p>
+                <p>6.&nbsp;В реестр включаются следующие сведения:</p>
+                <p>1)&nbsp;о малой технологической компании:</p>
+                <p>а)&nbsp;полное наименование юридического лица;</p>
+                <p>б)&nbsp;организационно-правовая форма юридического лица;</p>
+                <p>в)&nbsp;идентификационный номер налогоплательщика;</p>
+                <p>г)&nbsp;объем выручки, в том числе по основному виду экономической деятельности, за предшествующий
+                    календарный год;</p>
+                <p>д)&nbsp;код и наименование основного вида экономической деятельности по Общероссийскому
+                    классификатору видов экономической деятельности;</p>
+                <p>е)&nbsp;сведения о результатах интеллектуальной деятельности (программах для электронных
+                    вычислительных машин, базах данных, изобретениях, полезных моделях, селекционных достижениях,
+                    топологиях интегральных микросхем), имеющих правовую охрану на территории Российской Федерации,
+                    исключительные права на которые принадлежат малой технологической компании и в отношении которых
+                    осуществлена государственная регистрация, и (или) о поданных заявках на государственную регистрацию
+                    указанных результатов интеллектуальной деятельности;</p>
+                <p>2)&nbsp;об инновационных проектах, реализуемых малой технологической компанией (при наличии):</p>
+                <p>а)&nbsp;наименование инновационного проекта;</p>
+                <p>б)&nbsp;описание инновационного проекта;</p>
+                <p>в)&nbsp;форма участия малой технологической компании в инновационном проекте;</p>
+                <p>3)&nbsp;об инновационных технологиях, создаваемых и (или) применяемых (внедряемых) малой
+                    технологической компанией при разработке и (или) производстве продукции (оказании услуг, выполнении
+                    работ);</p>
+                <p>4)&nbsp;о продукции (работах, об услугах), для разработки и (или) производства которой малой
+                    технологической компанией применяются (внедряются) инновационные технологии:</p>
+                <p>а)&nbsp;наименование продукции (работ, услуг);</p>
+                <p>б)&nbsp;описание продукции (работ, услуг);</p>
+                <p>в)&nbsp;вид продукции (работ, услуг);</p>
+                <p>5)&nbsp;об основании включения сведений о малой технологической компании в реестр;</p>
+                <p>6)&nbsp;о центре экспертизы малых технологических компаний, проводившем экспертизу технологической
+                    компании, в случае включения сведений о ней в реестр на основании пункта 2 части 4 настоящей статьи:
+                </p>
+                <p>а)&nbsp;полное наименование юридического лица;</p>
+                <p>б)&nbsp;организационно-правовая форма юридического лица;</p>
+                <p>в)&nbsp;идентификационный номер налогоплательщика;</p>
+                <p>7)&nbsp;о виде малой технологической компании;</p>
+                <p>8)&nbsp;дополнительные сведения в случае, если они определены Правительством Российской Федерации в
+                    соответствии с пунктом 9 части 2 статьи 3 настоящего Федерального закона.</p>
+                <p>7.&nbsp;Формирование и ведение реестра осуществляются в соответствии с порядком, утвержденным
+                    Правительством Российской Федерации на основании пункта 8 части 1 статьи 3 настоящего Федерального
+                    закона.</p>
+                <p>8.&nbsp;Подтверждением статуса малой технологической компании является наличие сведений о ней в
+                    реестре.</p>
+                <p>9.&nbsp;Сведения, содержащиеся в реестре, могут предоставляться уполномоченным органом третьим лицам
+                    в случаях, порядке и сроки, которые утверждены Правительством Российской Федерации в соответствии с
+                    пунктом 12 части 1 статьи 3 настоящего Федерального закона.</p>
+                <p>10.&nbsp;В целях осуществления отнесения технологической компании к малым технологическим компаниям,
+                    формирования и ведения реестра осуществляется информационное взаимодействие в электронной форме
+                    между реестром, Единым реестром, государственными информационными системами, иными информационными
+                    системами, используемыми государственными органами, и государственными информационными ресурсами,
+                    информационными системами центров экспертизы малых технологических компаний с использованием
+                    инфраструктуры, обеспечивающей информационно-технологическое взаимодействие информационных систем,
+                    используемых для предоставления государственных и муниципальных услуг и исполнения государственных и
+                    муниципальных функций в электронной форме, в порядке, утвержденном Правительством Российской
+                    Федерации в соответствии с пунктом 11 части 1 статьи 3 настоящего Федерального закона.</p>
+                <p>11.&nbsp;Прекращение статуса малой технологической компании осуществляется путем исключения
+                    уполномоченным органом сведений о ней из реестра в соответствии с порядком, утвержденным
+                    Правительством Российской Федерации на основании пункта 4 части 1 статьи 3 настоящего Федерального
+                    закона, по одному из следующих оснований:</p>
+                <p>1)&nbsp;поступление заявления малой технологической компании о прекращении статуса малой
+                    технологической компании;</p>
+                <p>2)&nbsp;внесение в единый государственный реестр юридических лиц сведений о прекращении деятельности
+                    технологической компании, сведения о которой включены в реестр;</p>
+                <p>3)&nbsp;истечение срока действия экспертного заключения о соответствии технологической компании
+                    критериям, указанным в подпункте &quot;б&quot; пункта 3 части 1 настоящей статьи, если сведения о
+                    малой технологической компании включены в реестр по основанию, предусмотренному пунктом 2 части 4
+                    настоящей статьи;</p>
+                <p>4)&nbsp;истечение трех лет с даты окончания осуществления государственной поддержки инновационной
+                    деятельности в форме предоставления льгот по уплате налогов, сборов, таможенных платежей и (или) в
+                    форме финансового обеспечения (в части предоставления субсидий, грантов, кредитов, займов и взносов
+                    в уставный капитал) в случае, если сведения о малой технологической компании включены в реестр по
+                    основанию, предусмотренному пунктом 1 части 4 настоящей статьи;</p>
+                <p>5)&nbsp;непредставление малой технологической компанией налоговому органу по месту учета
+                    предусмотренной законодательством Российской Федерации о налогах и сборах отчетности, позволяющей
+                    определить объем выручки за предшествующий календарный год, в сроки, установленные законодательством
+                    Российской Федерации;</p>
+                <p>6)&nbsp;превышение ежегодно в течение двух последовательных календарных лет предельного значения
+                    объема выручки, в том числе по основному виду экономической деятельности, малой технологической
+                    компании согласно представленной ею налоговому органу по месту учета в соответствии с
+                    законодательством Российской Федерации о налогах и сборах отчетности, позволяющей определить объем
+                    выручки за предшествующий календарный год;</p>
+                <p>7)&nbsp;полуторакратное превышение предельного значения объема выручки, в том числе по основному виду
+                    экономической деятельности, малой технологической компании согласно представленной ею налоговому
+                    органу по месту учета в соответствии с законодательством Российской Федерации о налогах и сборах
+                    отчетности, позволяющей определить объем выручки за предшествующий календарный год;</p>
+                <p>8)&nbsp;изменение основного вида экономической деятельности малой технологической компании на вид
+                    экономической деятельности, не включенный в перечень, указанный в пункте 3 части 1 статьи 3
+                    настоящего Федерального закона;</p>
+                <p>9)&nbsp;отсутствие в течение срока, установленного Правительством Российской Федерации в соответствии
+                    с пунктом 10 части 1 статьи 3 настоящего Федерального закона, факта государственной регистрации
+                    результата (одного из результатов) интеллектуальной деятельности, наличие заявки на государственную
+                    регистрацию которого являлось основанием признания соответствия технологической компании показателю
+                    оценки, указанному в пункте 1 части 6 статьи 6 настоящего Федерального закона, в случае, если
+                    сведения о малой технологической компании включены в реестр по основанию, предусмотренному пунктом 1
+                    части 4 настоящей статьи. </p>
+                <p>12.&nbsp;В случае, если сведения о малой технологической компании включены в реестр в соответствии с
+                    пунктом 2 части 4 настоящей статьи, малая технологическая компания не позднее чем за сорок пять
+                    календарных дней до истечения срока действия экспертного заключения о соответствии технологической
+                    компании критериям, указанным в подпункте &quot;б&quot; пункта 3 части 1 настоящей статьи, вправе
+                    подать заявление о подтверждении соответствия критериям, указанным в подпункте &quot;б&quot; пункта
+                    3 части 1 настоящей статьи, в порядке, утвержденном Правительством Российской Федерации в
+                    соответствии с пунктом 4 части 1 статьи 3 настоящего Федерального закона.</p>
+                <p>&nbsp;</p>
+                <p class="H">Статья 6. Деятельность центра экспертизы малых технологических компаний при отнесении
+                    технологической компании к малой технологической компании </p>
+                <p>&nbsp;</p>
+                <p>1.&nbsp;Центр экспертизы малых технологических компаний в соответствии с порядком, утвержденным
+                    Правительством Российской Федерации на основании пункта 4 части 1 статьи 3 настоящего Федерального
+                    закона, проводит:</p>
+                <p>1)&nbsp;проверку соответствия технологической компании условиям, указанным в пунктах 1 и 2 части 1
+                    статьи 5 настоящего Федерального закона, в случае возложения на него функции по проведению такой
+                    проверки Правительством Российской Федерации;</p>
+                <p>2)&nbsp;экспертизу малых технологических компаний путем оценки соответствия технологической компании
+                    критериям, указанным в подпункте &quot;б&quot; пункта 3 части 1 статьи 5 настоящего Федерального
+                    закона;</p>
+                <p>3)&nbsp;передачу экспертного заключения о соответствии (несоответствии) технологической компании
+                    условиям и критериям, указанным в пунктах 1 и 2, подпункте &quot;б&quot; пункта 3 части 1 статьи 5
+                    настоящего Федерального закона, технологической компании и в уполномоченный орган, а также сведений
+                    для включения в реестр по результатам экспертизы малой технологической компании в уполномоченный
+                    орган.</p>
+                <p>2.&nbsp;Экспертиза малых технологических компаний проводится по результатам проверки, проведенной на
+                    основании части&nbsp;5 статьи&nbsp;5 настоящего Федерального закона, в случае соответствия
+                    технологической компании условиям, указанным в пунктах 1 и 2 части&nbsp;1 статьи&nbsp;5 настоящего
+                    Федерального закона.</p>
+                <p>3.&nbsp;Экспертиза малых технологических компаний проводится центром экспертизы малых технологических
+                    компаний, определенным в соответствии с порядком, утвержденным Правительством Российской Федерации
+                    на основании пункта 4 части 1 статьи 3 настоящего Федерального закона, в сроки, установленные
+                    указанным порядком.</p>
+                <p>4.&nbsp;Экспертиза малых технологических компаний проводится центром экспертизы малых технологических
+                    компаний за счет средств технологической компании, уплачиваемых ею соответствующему центру
+                    экспертизы малых технологических компаний, в размере, определяемом в соответствии с порядком,
+                    утвержденным уполномоченным органом.</p>
+                <p>5.&nbsp;Для проведения экспертизы малых технологических компаний технологическая компания
+                    представляет вместе с заявлением об отнесении технологической компании к малой технологической
+                    компании сведения и документы, которые необходимы для проведения указанной экспертизы и перечень
+                    которых устанавливается Правительством Российской Федерации в соответствии с пунктом 4 части 1
+                    статьи 3 настоящего Федерального закона.</p>
+                <p>6.&nbsp;Для оценки соответствия технологической компании критерию, указанному в абзаце втором
+                    подпункта &quot;б&quot; пункта 3 части 1 статьи 5 настоящего Федерального закона, применяются
+                    следующие показатели оценки:</p>
+                <p>1)&nbsp;наличие исключительных прав на результат (результаты) интеллектуальной деятельности
+                    (программы для электронных вычислительных машин, базы данных, изобретения, полезные модели,
+                    селекционные достижения, топологии интегральных микросхем, используемые технологической компанией
+                    для разработки и (или) производства новой или значительно улучшенной продукции (оказания услуг,
+                    выполнения работ), а также обеспечивающие экономическую эффективность применения (внедрения) такой
+                    продукции (оказания услуг, выполнения работ), повышение производительности труда и (или) создание
+                    новых рынков товаров, работ, услуг, в отношении которых осуществлена государственная регистрация)
+                    либо наличие поданной (поданных) технологической компанией не позднее чем за три года до даты
+                    представления заявления об отнесении технологической компании к малой технологической компании
+                    заявки (заявок) на государственную регистрацию такого (таких) результата (результатов)
+                    интеллектуальной деятельности;</p>
+                <p>2)&nbsp;наличие опыта разработки и (или) производства новой или значительно улучшенной продукции
+                    (оказания услуг, выполнения работ) с применением (внедрением) инновационных технологий;</p>
+                <p>3)&nbsp;соответствие доли выручки от реализации товаров (работ, услуг) собственного производства за
+                    предшествующий календарный год в общем объеме выручки, в том числе по основному виду экономической
+                    деятельности, минимальному значению, определенному Правительством Российской Федерации в
+                    соответствии с пунктом 7 части 1 статьи 3 настоящего Федерального закона;</p>
+                <p>4)&nbsp;соответствие доли выручки от осуществления основного вида экономической деятельности за
+                    предшествующий календарный год в общем объеме выручки, в том числе по основному виду экономической
+                    деятельности, минимальному значению, определенному Правительством Российской Федерации в
+                    соответствии с пунктом 7 части 1 статьи 3 настоящего Федерального закона.</p>
+                <p>7.&nbsp;Для оценки соответствия технологической компании критерию, указанному в абзаце третьем
+                    подпункта &quot;б&quot; пункта 3 части 1 статьи 5 настоящего Федерального закона, применяются
+                    следующие показатели оценки:</p>
+                <p>1)&nbsp;наличие спроса, в том числе потенциального, на разрабатываемую и (или) производимую новую или
+                    значительно улучшенную продукцию (оказываемые услуги, выполняемые работы) технологической компанией;
+                </p>
+                <p>2)&nbsp;уровень квалификации специалистов и иных работников (лиц), непосредственно разрабатывающих и
+                    (или) производящих продукцию (оказывающих услуги, выполняющих работы) с применением (внедрением)
+                    инновационных технологий, и (или) их непосредственных руководителей, работающих в технологической
+                    компании или привлеченных ею на основании договоров об оказании услуг;</p>
+                <p>3)&nbsp;достаточность зданий, строений, сооружений и (или) помещений, оборудования и других
+                    материальных ресурсов, принадлежащих технологической компании на праве собственности или ином
+                    законном основании, для осуществления разработки и (или) производства продукции (оказания услуг,
+                    выполнения работ) с применением (внедрением) инновационных технологий;</p>
+                <p>4)&nbsp;наличие конкурентного преимущества разрабатываемой и (или) производимой новой или значительно
+                    улучшенной продукции (оказания услуг, выполнения работ), выражающегося в имеющейся или планируемой
+                    экономической эффективности применения (внедрения) такой продукции (оказания услуг, выполнения
+                    работ), повышении производительности труда и (или) создании новых рынков товаров, работ, услуг.</p>
+                <p>8.&nbsp;Для оценки соответствия технологической компании критериям, указанным в подпункте
+                    &quot;б&quot; пункта 3 части 1 статьи 5 настоящего Федерального закона, могут применяться
+                    дополнительные показатели оценки указанных критериев в случае их установления Правительством
+                    Российской Федерации в соответствии с пунктом 7 части 2 статьи 3 настоящего Федерального закона.</p>
+                <p>9.&nbsp;Технологическая компания при проведении экспертизы малых технологических компаний считается
+                    соответствующей критериям, указанным в подпункте &quot;б&quot; пункта 3 части 1 статьи 5 настоящего
+                    Федерального закона, при достижении минимального значения результата интегральной оценки
+                    соответствия показателям оценки указанных критериев в порядке, утвержденном Правительством
+                    Российской Федерации в соответствии с пунктом 4 части 1 статьи 3 настоящего Федерального закона.</p>
+                <p>10.&nbsp;В целях проведения центром экспертизы малых технологических компаний проверки соответствия
+                    технологической компании условиям, указанным в пунктах 1 и 2 части 1 статьи 5 настоящего
+                    Федерального закона, и экспертизы малых технологических компаний владельцы и операторы
+                    государственных и муниципальных информационных систем, иных государственных информационных ресурсов,
+                    информационных систем центров экспертизы малых технологических компаний на основании обращения
+                    центра экспертизы малых технологических компаний обязаны предоставлять в электронной форме
+                    информацию на безвозмездной основе, если иное не установлено другими федеральными законами, а в
+                    отношении информации, доступ к которой ограничен, при наличии согласия технологической компании,
+                    если иное не установлено другими федеральными законами.</p>
+                <p>11.&nbsp;По результатам экспертизы малых технологических компаний центр экспертизы малых
+                    технологических компаний оформляет экспертное заключение о соответствии (несоответствии)
+                    технологической компании условиям и критериям, указанным в пунктах 1 и 2, подпункте &quot;б&quot;
+                    пункта 3 части 1 статьи 5 настоящего Федерального закона, по форме, утвержденной уполномоченным
+                    органом. Указанное экспертное заключение направляется центром экспертизы малых технологических
+                    компаний технологической компании и в уполномоченный орган в порядке и сроки, которые определены
+                    Правительством Российской Федерации.</p>
+                <p>12.&nbsp;Экспертное заключение о соответствии технологической компании критериям, указанным в
+                    подпункте &quot;б&quot; пункта 3 части 1 статьи 5 настоящего Федерального закона, действительно в
+                    течение трех лет со дня его оформления, за исключением случаев, при которых более продолжительный
+                    срок его действия установлен Правительством Российской Федерации в соответствии с пунктом 8 части 2
+                    статьи 3 настоящего Федерального закона.</p>
+                <p>13.&nbsp;Уполномоченный орган осуществляет контроль за соблюдением центрами экспертиз малых
+                    технологических компаний требований настоящего Федерального закона и принятых в соответствии с ним
+                    нормативных правовых актов Российской Федерации.</p>
+                <p>&nbsp;</p>
+                <p class="H">Статья 7. Вступление в силу настоящего Федерального закона</p>
+                <p>&nbsp;</p>
+                <p>Настоящий Федеральный закон вступает в силу по истечении девяноста дней после дня его официального
+                    опубликования.</p>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <p class="I">Президент Российской
+                    Федерации&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;В.Путин
+                </p>
+                <p>&nbsp;</p>
+                <p class="I">Москва, Кремль</p>
+                <p class="I">4&nbsp;августа&nbsp;2023&nbsp;года</p>
+                <p class="I">№&nbsp;478-ФЗ</p>
+                <p>&nbsp;</p>
+            </body>
+
+            </html>
+
+        </div>
+
+
+
+    </div>
+
+</body>
+
+</html>
