@@ -87,7 +87,14 @@ impl Changes
                     {
                         last.text_changes = Some(Vec::new());
                     }
+                    if last.changes.is_none()
+                    {
+                        last.changes = Some(Vec::new());
+                    }
                     let changes = last.text_changes.as_mut().unwrap();
+                    let enum_changes = last.changes.as_mut().unwrap();
+                    //TODO уточнить изменения в энумах (абзац, пункт, статья...)
+                    //enum_changes.push(Cha);
                     changes.push(txt.to_owned());
                 },
                 Action::Replace => 
