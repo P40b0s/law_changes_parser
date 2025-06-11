@@ -67,7 +67,7 @@ pub enum Changes<O>
     ///Замена структурной единицы, например статьи целиком, нужно брать объект в том формате в котором будем его парсить
     ChangeObject(O)
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TargetPath(Vec<ChangePath>);
 impl TargetPath
 {
@@ -106,10 +106,17 @@ impl TargetPath
     {
         self.0.push(ChangePath::Indent(indent_number));
     }
-    ///добавляет глобальные пути в начало вектора
-    pub fn insert_paths(&mut self, path: &Vec<ChangePath>)
+    ///добавляет глобальные пути в начало вектора если в этом векторе уже есть путь с таким же уровнем удаляем его из глобальных путей
+    pub fn insert_paths(&mut self, paths: &mut Vec<ChangePath>)
     {
-        self.0 = [path.clone(), self.0.clone()].concat();
+        paths.retain(|r| 
+        {
+            !self.0.iter().any(|a| a.get_lvl() == r.get_lvl())
+        });
+        if !paths.is_empty()
+        {
+            self.0 = [paths.clone(), self.0.clone()].concat();
+        }
     }
     pub fn get_paths(&self) -> &Vec<ChangePath>
     {
