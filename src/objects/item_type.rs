@@ -6,7 +6,7 @@ use crate::error::ParserError;
 
 
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ItemType
 {
     ///иногда частями назвают например 1) это часть первая в ФЗ
@@ -43,16 +43,16 @@ impl Ord for ItemType
                 match other
                 {
                     ItemType::Part => Ordering::Equal,
-                    _ => Ordering::Greater
+                    _ => Ordering::Less
                 }
             }
             ItemType::Item =>
             {
                 match other 
                 {
-                    ItemType::Part => Ordering::Less,
+                    ItemType::Part => Ordering::Greater,
                     ItemType::Item => Ordering::Equal,
-                    _ => Ordering::Greater
+                    ItemType::Subitem => Ordering::Less
                 }
             }
             ItemType::Subitem =>
@@ -64,6 +64,13 @@ impl Ord for ItemType
                 }
             }
         }
+    }
+}
+impl PartialOrd for ItemType
+{
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> 
+    {
+        Some(self.cmp(other))
     }
 }
 
@@ -80,5 +87,21 @@ mod tests
         let p_num = "1^1.";
         let it: ItemType = p_name.parse().unwrap();
         assert_eq!(ItemType::Item, it);
+    }
+    #[test]
+    fn test_ordering()
+    {
+        let mut items = vec![
+            ItemType::Subitem,
+            ItemType::Part,
+            ItemType::Item
+        ];
+        logger::StructLogger::new_default();
+        logger::debug!("before sorting: {:?}", &items);
+        items.sort();
+        logger::debug!("after sorting: {:?}", &items);
+        assert_eq!(items[0], ItemType::Part);
+        assert_eq!(items[1], ItemType::Item);
+        assert_eq!(items[2], ItemType::Subitem);
     }
 }

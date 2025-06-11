@@ -3,39 +3,89 @@ use nom::
     branch::alt, bytes::complete::{is_a, tag, tag_no_case}, combinator::map, sequence::pair, IResult, Parser
 };
 
-use crate::{change_action::ChangeAction, change_path::TargetPath, error::ParserError, objects::{number::Number, remain_tokens::RemainTokens}, parsers::{paths, space0}};
+use crate::{change_action::ChangeAction, change_path::{ChangePath, TargetPath}, error::ParserError, objects::{number::Number, remain_tokens::RemainTokens}, parsers::{paths, space0}};
+
+struct Changes
+{
+    target_path: TargetPath,
+    changes: Vec<ChangeAction>,
+    action_after_path: Option<TargetPath>
+}
 
 
-
-pub fn new_checker(s: &str) -> Option<RemainTokens>
+pub fn new_checker(s: &str, all_paths: &mut Vec<ChangePath>) -> Option<RemainTokens>
 {
     //только путь, дальше идет уточнение
+    //генерируем глобальный путь для всех изменений
     let only_path_definitions_directive: IResult<&str, TargetPath, ParserError> = super::only_path_definition(s);
     if let Ok((remains, path)) = only_path_definitions_directive
     {
+        let current_paths = path.get_paths();
+        if let Some(all_last) = all_paths.last()
+        {
+            if let Some(cp_last) = current_paths.last()
+            {
+                if cp_last.get_lvl() <= all_last.get_lvl()
+                {
+                    all_paths.clear();
+                    all_paths.extend(current_paths.clone());
+                }
+                else 
+                {
+                    all_paths.push(cp_last.clone());
+                }
+            }
+        }
+        else 
+        {
+            if let Some(cp_last) = current_paths.last()
+            {
+                all_paths.push(cp_last.clone()); 
+            }
+        }
         return Some(RemainTokens::new(s, remains));
     }
     //тут у нас дополнения с изменениями которые занимают несколько абзацев, их берем из полей changes
     let apply_directive: IResult<&str, (Option<TargetPath>, TargetPath), ParserError> =  super::apply_all(s);
     if let Ok((remains, (after, target))) = apply_directive
     {
+        //TODO надо подумать когда добавлять глобальный путь а когда нет, например если в локальном пути уже есть уровень статьи и выше то не добавляем
+        if !all_paths.is_empty()
+        {
+            let mut tp = target;
+            tp.sort();
+            tp.insert_paths(&all_paths);
+            logger::debug!("apply directive: {:?}", tp)
+        }
         return Some(RemainTokens::new(s, remains));
     }
     //тут изменения в пределах абзаца дополнить словами заменить словами итд.
     let words_directive: IResult<&str, (TargetPath, Vec<ChangeAction>), ParserError> = super::words::words_operations(s);
     if let Ok((remains, (path, actions))) = words_directive
     {
+        if !all_paths.is_empty()
+        {
+            let mut tp = path;
+            tp.sort();
+            //сортирока не сработала
+            //words directive: TargetPath([Header { number: Number { number: "242", va_number: None, postfix: None }, header_type: Article }, Indent(1), Item { number: Number { number: "3", va_number: None, postfix: None }, item_type: Item }])
+            tp.insert_paths(&all_paths);
+            logger::debug!("words directive: {:?}", tp)
+        }
         return Some(RemainTokens::new(s, remains));
     }
     //замена чего либо (c нового абзаца и далее)
     let replace_directive: IResult<&str, TargetPath, ParserError> = super::replace_all(s);
     if let Ok((remains, path)) = replace_directive
     {
+         if !all_paths.is_empty()
+        {
+            let mut tp = path;
+            tp.sort();
+            tp.insert_paths(&all_paths);
+            logger::debug!("replace directive: {:?}", tp)
+        }
         return Some(RemainTokens::new(s, remains));
-    }
-    else 
-    {
-        logger::error!("{}", replace_directive.err().unwrap().to_string());    
     }
     //хз не помню для чего это
     let item_name_directive: IResult<&str, &str, ParserError> = item_name(s);
@@ -43,6 +93,7 @@ pub fn new_checker(s: &str) -> Option<RemainTokens>
     {
         return Some(RemainTokens::new(s, remains));
     }
+    //ни один кейс не прошел значит это изменение на отдельной строке
     return None;
     
 }
@@ -73,12 +124,14 @@ mod tests
     fn test_changes_parser()
     {
         logger::StructLogger::new_default();
+        let mut all_paths = Vec::new();
         for ln in TEST_DATA.lines()
         {
-            let result = super::new_checker(ln);
+            let result = super::new_checker(ln, &mut all_paths);
             if let Some(r) = result
             {
                 logger::debug!("input string `{}` remains tokens `{:?}`", ln, r);
+                logger::debug!("current global paths {:?}`", all_paths);
             }
             
         }

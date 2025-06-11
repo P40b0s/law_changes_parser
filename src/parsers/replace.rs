@@ -138,6 +138,35 @@ mod tests
         let p = super::replace_all(s).unwrap();
         info!("тест строки ->{} остаток токенов ->{}| путь->{}", s, p.0, serde_json::to_string_pretty(&p.1).unwrap());
     }
+    // #[test]
+    // fn test_r()
+    // {
+    //     logger::StructLogger::new_default();
+    //     let mut items = Vec::new();
+    //     let item:u64 = 1000000000;
+    //     //for i in 1..item
+    //     for i in 1..((item/2)+1)
+    //     {
+    //         if item % i == 0
+    //         {
+    //             items.push(i);
+    //         }
+    //     }
+    //     logger::info!("{:?}", items);
+    // }
+
+    // #[test]
+    // fn test_r_2()
+    // {
+    //     logger::StructLogger::new_default();
+    //     let mut items = 1..100;
+    //     let mut sum = 0;
+    //     for i in 1..=100
+    //     {
+    //         sum +=i
+    //     }
+    //     logger::debug!("{}", sum);
+    // }
 
     
 }

@@ -4,7 +4,7 @@ use nom::IResult;
 use serde::{Deserialize, Serialize};
 
 use crate::{error::ParserError, objects::{header_type::HeaderType, item_type::ItemType, number::Number}, parsers::space1};
-#[derive(Debug, Serialize, Deserialize, PartialOrd, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq)]
 pub enum ChangePath
 {
     ///индекс заголовока в который нужно внести изменение
@@ -24,6 +24,35 @@ pub enum ChangePath
     },
     ///номер параграфа (отсчет от 1) параграфа для внесения изменения
     Indent(u32)
+}
+impl ChangePath
+{
+    ///получаем уровень пути, 
+    pub fn get_lvl(&self) -> u8
+    {
+        match self
+        {
+            ChangePath::Header { number: _, header_type: ht } =>
+            {
+                match ht
+                {
+                    HeaderType::Chapter => 0,
+                    HeaderType::Section => 1,
+                    HeaderType::Article => 2
+                }
+            }
+            ChangePath::Item { number: _, item_type: it } =>
+            {
+                match it
+                {
+                    ItemType::Part => 3,
+                    ItemType::Item => 4,
+                    ItemType::Subitem => 5
+                }
+            }
+            ChangePath::Indent(_) => 6
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -77,6 +106,16 @@ impl TargetPath
     {
         self.0.push(ChangePath::Indent(indent_number));
     }
+    ///добавляет глобальные пути в начало вектора
+    pub fn insert_paths(&mut self, path: &Vec<ChangePath>)
+    {
+        self.0 = [path.clone(), self.0.clone()].concat();
+    }
+    pub fn get_paths(&self) -> &Vec<ChangePath>
+    {
+        &self.0
+    }
+    
     ///concat Vec<TargetPath> to one object and sorting items
     pub fn flatten(vec: Vec<Self>) -> Self
     {
@@ -103,7 +142,7 @@ impl TargetPath
 }
 
 
-
+///определяем Header как наименьший а Indent как наибольший для правильной сортировки
 impl Ord for ChangePath
 {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering 
@@ -126,7 +165,7 @@ impl Ord for ChangePath
                             ht
                         }
                     }
-                    _ => Ordering::Greater
+                    _ => Ordering::Less
                 }
             },
             ChangePath::Item { number, item_type } =>
@@ -135,7 +174,7 @@ impl Ord for ChangePath
                 {
                     ChangePath::Header { number: _, header_type: _ } =>
                     {
-                        Ordering::Less
+                        Ordering::Greater
                     }
                     ChangePath::Item { number: other_number, item_type: other_item_type } =>
                     {
@@ -150,7 +189,7 @@ impl Ord for ChangePath
                         }
                         
                     }
-                    _ => Ordering::Greater
+                    _ => Ordering::Less
                 }
             }
             ChangePath::Indent(i) =>
@@ -161,10 +200,17 @@ impl Ord for ChangePath
                     {
                         i.cmp(other_i)
                     }
-                    _ => Ordering::Less
+                    _ => Ordering::Greater
                 }
             }
         }
+    }
+}
+impl PartialOrd for ChangePath
+{
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> 
+    {
+        Some(self.cmp(other))
     }
 }
 
@@ -215,7 +261,7 @@ impl PartialEq for ChangePath
 #[cfg(test)]
 mod tests
 {
-    use crate::change_path::ChangePath;
+    use crate::{change_path::ChangePath, objects::{header_type::HeaderType, number::Number}};
 
     #[test]
     fn test_path_1()
@@ -246,5 +292,18 @@ mod tests
             logger::debug!("{:?}", tp);
             assert_eq!(number.number, "22");
         }
+    }
+
+    #[test]
+    fn test_ord()
+    { 
+        let indent = ChangePath::Indent(3);
+        let header = ChangePath::Header { number: Number::parse("20").unwrap().1, header_type: "Статья".parse().unwrap() };
+        let item = ChangePath::Item { number: Number::parse("2)").unwrap().1, item_type: "пункт".parse().unwrap()  };
+        let mut items = vec![item.clone(), indent.clone(), header.clone()];
+        items.sort();
+        assert_eq!(items[0], header);
+        assert_eq!(items[1], item);
+        assert_eq!(items[2], indent);
     }
 }

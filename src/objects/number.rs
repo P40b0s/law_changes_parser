@@ -22,7 +22,7 @@ impl Number
     pub fn parse(s: &str) -> IResult<&str, Number, ParserError>
     {
         //если абзац идет первым словом то is_a его сжирал, делаем доп условие
-        let num = verify(is_a(ITEM_NUMBER), |s: &str| s != "абзац" && s != "абзацы");
+        let num = verify(is_a(ITEM_NUMBER), |s: &str| !s.starts_with("абза"));
         let mut normal_parser =  
         pair(
         num, 
@@ -181,7 +181,6 @@ impl Ord for Number
             {
                 ord
             }
-            
         }
     }
 }

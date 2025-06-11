@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::ParserError;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum HeaderType
 {
     ///раздел
@@ -26,16 +26,16 @@ impl Ord for HeaderType
                 match other
                 {
                     HeaderType::Chapter => Ordering::Equal,
-                    _ => Ordering::Greater
+                    _ => Ordering::Less
                 }
             }
             HeaderType::Section =>
             {
                 match other 
                 {
-                    HeaderType::Chapter => Ordering::Less,
+                    HeaderType::Chapter => Ordering::Greater,
                     HeaderType::Section => Ordering::Equal,
-                    _ => Ordering::Greater
+                    _ => Ordering::Less
                 }
             }
             HeaderType::Article =>
@@ -47,6 +47,13 @@ impl Ord for HeaderType
                 }
             }
         }
+    }
+}
+impl PartialOrd for HeaderType
+{
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> 
+    {
+        Some(self.cmp(other))
     }
 }
 
@@ -102,5 +109,27 @@ impl FromStr for HeaderType
             h if h.starts_with("глав") => Ok(HeaderType::Section),
             _ => Err(ParserError::OperationError(["строка `", s, "` не является валидным заголовком"].concat()))
         }
+    }
+}
+#[cfg(test)]
+mod tests
+{
+    use crate::objects::header_type::HeaderType;
+
+    #[test]
+    fn test_ordering()
+    {
+        let mut headers = vec![
+            HeaderType::Article,
+            HeaderType::Chapter,
+            HeaderType::Section
+        ];
+        logger::StructLogger::new_default();
+        logger::debug!("before sorting: {:?}", &headers);
+        headers.sort();
+        logger::debug!("after sorting: {:?}", &headers);
+        assert_eq!(headers[0], HeaderType::Chapter);
+        assert_eq!(headers[1], HeaderType::Section);
+        assert_eq!(headers[2], HeaderType::Article);
     }
 }
