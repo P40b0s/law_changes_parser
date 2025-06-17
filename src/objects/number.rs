@@ -4,10 +4,10 @@ use nom::
     branch::alt, bytes::complete::{is_a, tag}, combinator::{all_consuming, not, opt, verify}, error::ParseError, sequence::{delimited, pair, separated_pair}, IResult, Parser
 };
 use serde::{Deserialize, Serialize};
-use crate::parsers::consts::{SUBSCRIPT, SUPERSCRIPT};
+use crate::parsers::{consts::{SUBSCRIPT, SUPERSCRIPT}, diagramm::AsMarkdown};
 use crate::{error::ParserError, parsers::ITEM_NUMBER};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Hash)]
 pub struct Number
 {
     ///Номер пунката статьи итд
@@ -61,7 +61,39 @@ impl Number
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+impl AsMarkdown for Number
+{
+    fn as_markdown(&self) -> String
+    {
+        let mut n = self.number.clone();
+        if let Some(va) = self.va_number.as_ref()
+        {
+            match va.1
+            {
+                VerticalAlignment::Normal => n.push_str(&va.0),
+                VerticalAlignment::Subscript => 
+                {
+                    n.push_str("<sub>");
+                    n.push_str(&va.0);
+                    n.push_str("</sub>");
+                },
+                VerticalAlignment::Superscript =>
+                {
+                    n.push_str("<sup>");
+                    n.push_str(&va.0);
+                    n.push_str("</sup>");
+                }
+            }
+        }
+        if let Some(postfix) = self.postfix.as_ref()
+        {
+            n.push_str(postfix);
+        }
+        n
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
 pub enum VerticalAlignment
 {
     Subscript,

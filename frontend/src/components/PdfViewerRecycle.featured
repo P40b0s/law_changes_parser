@@ -1,0 +1,114 @@
+<template>
+    <RecycleScroller
+      class="scroller"
+      :items="virtualPages"
+      :item-size="800" 
+      key-field="id"
+      @scroll="scroll_pdfs"
+    >
+      <template #default="{ item }">
+        <div 
+          class="pdf-page" 
+          :ref="(el) => set_item_ref(el, `page_container_${item.index+1}`)"
+          :id="`page_container_${item.index+1}`"
+        >
+          <transition name="fade" mode="out-in">
+            <n-spin 
+              v-if="!page_loaded(item.pdf)" 
+              class="loader-style" 
+              size="large"
+            />
+            <img v-else :src="item.pdf" :style="{ height: `${item.height}px` }" />
+          </transition>
+          <div class="splitter"></div>
+        </div>
+      </template>
+    </RecycleScroller>
+  </template>
+  
+  <script lang="ts">
+  import { defineComponent, ref, computed } from 'vue';
+  import { RecycleScroller } from 'vue-virtual-scroller';
+  import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
+  
+  export default defineComponent({
+    components: {
+      RecycleScroller
+    },
+    setup() {
+      const pages = ref([]); // Ваш массив страниц
+      const scrollContainer = ref(null);
+      const item_refs = ref<Map<string, HTMLElement>>(new Map());
+  
+      // Подготовка данных для виртуального скролла
+      const virtualPages = computed(() => {
+        return pages.value.map((pdf, index) => ({
+          id: `page_${index}`,
+          pdf,
+          index,
+          height: 800 // или динамическая высота, если известна
+        }));
+      });
+  
+      const set_item_ref = (el: HTMLElement | null, id: string) => {
+        if (el) item_refs.value.set(id, el);
+        else item_refs.value.delete(id);
+      };
+  
+      const page_loaded = (pdf: string) => {
+        return !!pdf;
+      };
+  
+      const scroll_pdfs = (event: Event) => {
+        // Ваша логика обработки скролла
+      };
+  
+      return {
+        pages,
+        virtualPages,
+        set_item_ref,
+        page_loaded,
+        scroll_pdfs,
+        scrollContainer
+      };
+    }
+  });
+  </script>
+  
+  <style scoped>
+  .scroller {
+    height: 100vh;
+    width: 100%;
+  }
+  
+  .pdf-page {
+    box-sizing: border-box;
+    padding: 10px 0;
+    width: 100%;
+  }
+  
+  .loader-style {
+    height: 800px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+  }
+  
+  .splitter {
+    height: 1px;
+    background-color: #eee;
+    margin: 10px 0;
+  }
+  
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.3s ease;
+  }
+  
+  .fade-enter-from,
+  .fade-leave-to {
+    opacity: 0;
+  }
+  </style>

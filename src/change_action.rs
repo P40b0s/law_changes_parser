@@ -1,6 +1,6 @@
 use crate::objects::number::Number;
 
-#[derive(serde::Serialize, Clone, PartialEq, serde::Deserialize, Debug)]
+#[derive(serde::Serialize, Clone, PartialEq, serde::Deserialize, Debug, Hash)]
 pub enum ChangeAction
 {
     //слова "в области связи" заменить словами ", осуществляющий функции по контролю и надзору в сфере средств массовой информации, массовых коммуникаций, информационных технологий и связи"

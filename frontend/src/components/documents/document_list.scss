@@ -1,0 +1,95 @@
+$hover-color: 1px 3px 9px 2px rgba(27, 126, 110, 0.3);
+.main-n-list-item
+{
+    background-color: #3136366e;
+    border-left: 0.5rem solid transparent;
+    margin-top: 10px;
+    border-radius: 5px;
+    margin-bottom: 2px;
+    margin-right: 6px;
+    box-shadow: 1px 3px 9px 2px rgba(27, 126, 110, 0.3);
+    transition: box-shadow 0.3s ease-in-out;
+    &::selection
+    {
+      box-shadow: 0px 0px 15px 2px rgba(50, 231, 201, 0.87);
+    }
+}
+.main-n-list-item:hover
+{
+    //$hover-color: 1px 1px 15px 2px rgba(50, 231, 201, 0.87);
+    box-shadow: 0px 0px 15px 2px rgba(50, 231, 201, 0.87);
+}
+
+.col-txt 
+{
+    background: linear-gradient(
+        to right, 
+        hsl(295, 81%, 69%), 
+        hsl(204, 93%, 42%)
+      );
+      font-size: 20px;
+      font-weight: 700;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+}
+
+.background
+{
+    /*  leverage cascade for cross-browser gradients  */
+  background: radial-gradient(
+    hsl(100 100% 60%), 
+    hsl(200 100% 60%) 
+  ) fixed;
+  background: conic-gradient(
+    hsl(100 100% 60%), 
+    hsl(200 100% 60%), 
+    hsl(100 100% 60%) 
+  ) fixed;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+}
+
+
+
+*, *:before, *:after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.table-redactions 
+{
+  background: #012B39;
+  border-radius: 0.25em;
+  border-collapse: collapse;
+  margin: 1em;
+}
+.th-redactions  
+{
+  border-bottom: 1px solid #364043;
+  color: #E2B842;
+  font-size: 0.85em;
+  font-weight: 600;
+  padding: 0.5em 1em;
+  text-align: left;
+}
+.td-redactions  
+{
+  color: #fff;
+  font-weight: 400;
+  padding: 0.65em 1em;
+}
+.disabled td-redactions 
+{
+  color: #4F5F64;
+}
+.tbody-redactions  .tr-redactions  
+{
+  transition: background 0.25s ease;
+}
+.tbody-redactions .tr-redactions:hover 
+{
+  background: #014055;
+}

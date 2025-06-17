@@ -1,0 +1,131 @@
+import { get, HTTPError } from "@/services/http_client"
+import { ComplexDocumentInformation, DateUserInfo, type Document, Document as DOC } from '@/types/document';
+import { type Result } from "option-t/plain_result";
+import {DataTableColumn, NCheckbox} from 'naive-ui'
+import { h, ref, VNodeChild } from "vue";
+import useUser from "@/composables/useUser";
+
+export const get_data = async () =>
+{
+    const r: Result<Document[], HTTPError> = await get("documents?date=01-02-2025&limit=100&offset=20", false)
+   return r.val as Document[];
+}    
+ 
+
+const {get_user} = useUser();
+export const columns: DataTableColumn[] = [
+    {
+      title: 'ID',
+      key: 'doc_id',
+      width: "10"
+    },
+    {
+      title: 'Наименование',
+      key: 'complex_information.doc_name',
+      width: "100"
+    },
+    {
+      title: 'Проверен',
+      key: 'checked',
+      width: "100",
+      render (row: Document, row_num: number): VNodeChild
+      {
+        const ch = ref(!row.checked);
+        return h('div',{},
+          [
+            h(NCheckbox,
+              {
+                checkedValue: ch.value,
+                onUpdateChecked:(c) =>
+                {
+                  //ch.value = c;
+                  console.log(ch.value);
+                  if(c)
+                  {
+                    row.checked = 
+                    {
+                      user_id: get_user().value?.id,
+                      date: "11-12-2022:12:12:12"
+                    } as DateUserInfo
+                    row.checked = row.checked;
+                   
+                   
+                  }
+                  else
+                  {
+                    row.checked = undefined;
+                    row.checked = undefined;
+                    //ch.value = false;
+                  }
+                },
+                
+              }),
+              h('div', row.checked?.date ?? "1 " + row.checked?.user_id ?? " 2 ")
+          ]
+        )
+       
+      }
+    },
+    // {
+    //   title: 'Age',
+    //   key: 'age',
+    //   sorter: (row1, row2) => row1.age - row2.age
+    // },
+    // {
+    //   title: 'Chinese Score',
+    //   key: 'chinese',
+    //   defaultSortOrder: false,
+    //   sorter: {
+    //     compare: (a, b) => a.chinese - b.chinese,
+    //     multiple: 3
+    //   }
+    // },
+    // {
+    //   title: 'Math Score',
+    //   defaultSortOrder: false,
+    //   key: 'math',
+    //   sorter: {
+    //     compare: (a, b) => a.math - b.math,
+    //     multiple: 2
+    //   }
+    // },
+    // {
+    //   title: 'English Score',
+    //   defaultSortOrder: false,
+    //   key: 'english',
+    //   sorter: {
+    //     compare: (a, b) => a.english - b.english,
+    //     multiple: 1
+    //   }
+    // },
+    // {
+    //   title: 'Address',
+    //   key: 'address',
+    //   filterOptions: [
+    //     {
+    //       label: 'London',
+    //       value: 'London'
+    //     },
+    //     {
+    //       label: 'New York',
+    //       value: 'New York'
+    //     }
+    //   ],
+    //   filter(value, row) {
+    //     return ~row.address.indexOf(value)
+    //   }
+    //}
+  ]
+
+  const render_checked = (doc: Document) =>
+  {
+    return h(NCheckbox,
+      {
+        checkedValue: !!doc.checked,
+        onUpdateChecked:(c) =>
+        {
+          console.log(c)
+        }
+      }
+    )
+  }

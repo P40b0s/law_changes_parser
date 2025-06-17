@@ -1,10 +1,10 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, hash::{DefaultHasher, Hash, Hasher}};
 
 use nom::IResult;
 use serde::{Deserialize, Serialize};
 
-use crate::{error::ParserError, objects::{header_type::HeaderType, item_type::ItemType, number::Number}, parsers::space1};
-#[derive(Debug, Clone, Serialize, Deserialize, Eq)]
+use crate::{error::ParserError, objects::{header_type::HeaderType, item_type::ItemType, number::Number}, parsers::{diagramm::AsMarkdown, space1}};
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, Hash)]
 pub enum ChangePath
 {
     ///индекс заголовока в который нужно внести изменение
@@ -25,6 +25,7 @@ pub enum ChangePath
     ///номер параграфа (отсчет от 1) параграфа для внесения изменения
     Indent(u32)
 }
+
 impl ChangePath
 {
     ///получаем уровень пути, 
@@ -52,6 +53,174 @@ impl ChangePath
             }
             ChangePath::Indent(_) => 6
         }
+    }
+    // pub fn as_markdown(&self) -> String
+    // {
+    //     let mut output = String::new();
+    //     match self
+    //     {
+    //         ChangePath::Header { number: n, header_type: ht } =>
+    //         {
+    //             match ht
+    //             {
+    //                 HeaderType::Chapter => 
+    //                 {
+    //                     output.push_str("раздел ");
+    //                     output.push_str(&n.get_number_as_markdown());
+    //                 }
+    //                 HeaderType::Section => 
+    //                 {
+    //                     output.push_str("глава ");
+    //                     output.push_str(&n.get_number_as_markdown());
+    //                 }
+    //                 HeaderType::Article => 
+    //                 {
+    //                     output.push_str("статья ");
+    //                     output.push_str(&n.get_number_as_markdown());
+    //                 }
+    //             }
+    //         }
+    //         ChangePath::Item { number: n, item_type: it } =>
+    //         {
+    //             match it
+    //             {
+    //                 ItemType::Part => 
+    //                 {
+    //                     output.push_str("часть ");
+    //                     output.push_str(&n.get_number_as_markdown());
+    //                 }
+    //                 ItemType::Item => 
+    //                 {
+    //                     output.push_str("пункт ");
+    //                     output.push_str(&n.get_number_as_markdown());
+    //                 }
+    //                 ItemType::Subitem => 
+    //                 {
+    //                     output.push_str("подпункт ");
+    //                     output.push_str(&n.get_number_as_markdown());
+    //                 }
+    //             }
+    //         }
+    //         ChangePath::Indent(n) => 
+    //         {
+    //             output.push_str("абзац ");
+    //             output.push_str(&n.to_string());
+    //         }
+    //     }
+    //     output
+    // }
+    pub fn get_number(&self) -> Number
+    {
+        match self
+        {
+            ChangePath::Header { number: n, header_type: _ } =>
+            {
+                n.clone()
+            }
+            ChangePath::Item { number: n, item_type: _ } =>
+            {
+                n.clone()
+            }
+            ChangePath::Indent(n) => 
+            {
+                Number 
+                {
+                    number: n.to_string(),
+                    va_number: None,
+                    postfix: None
+                }
+            } 
+        }
+    }
+}
+impl AsMarkdown for ChangePath
+{
+    fn as_markdown(&self) -> String
+    {
+        self.as_markdown()
+    }
+    // fn as_markdown(&self) -> String
+    // {
+    //     match self
+    //     {
+    //         ChangePath::Header { number: n, header_type: _ } =>
+    //         {
+    //             n.as_markdown()
+    //         }
+    //         ChangePath::Item { number: n, item_type: _ } =>
+    //         {
+    //             n.as_markdown()
+    //         }
+    //         ChangePath::Indent(n) => 
+    //         {
+    //             Number 
+    //             {
+    //                 number: n.to_string(),
+    //                 va_number: None,
+    //                 postfix: None
+    //             }.as_markdown()
+    //         } 
+    //     }
+    // }
+}
+
+ 
+impl AsMarkdown for &ChangePath
+{
+    fn as_markdown(&self) -> String
+    {
+        let mut output = String::new();
+        match self
+        {
+            ChangePath::Header { number: n, header_type: ht } =>
+            {
+                match ht
+                {
+                    HeaderType::Chapter => 
+                    {
+                        output.push_str("раздел ");
+                        output.push_str(&n.as_markdown());
+                    }
+                    HeaderType::Section => 
+                    {
+                        output.push_str("глава ");
+                        output.push_str(&n.as_markdown());
+                    }
+                    HeaderType::Article => 
+                    {
+                        output.push_str("статья ");
+                        output.push_str(&n.as_markdown());
+                    }
+                }
+            }
+            ChangePath::Item { number: n, item_type: it } =>
+            {
+                match it
+                {
+                    ItemType::Part => 
+                    {
+                        output.push_str("часть ");
+                        output.push_str(&n.as_markdown());
+                    }
+                    ItemType::Item => 
+                    {
+                        output.push_str("пункт ");
+                        output.push_str(&n.as_markdown());
+                    }
+                    ItemType::Subitem => 
+                    {
+                        output.push_str("подпункт ");
+                        output.push_str(&n.as_markdown());
+                    }
+                }
+            }
+            ChangePath::Indent(n) => 
+            {
+                output.push_str("абзац ");
+                output.push_str(&n.to_string());
+            }
+        }
+        output
     }
 }
 
@@ -118,9 +287,20 @@ impl TargetPath
             self.0 = [paths.clone(), self.0.clone()].concat();
         }
     }
+    ///возвращает пути с их текущим хешем
     pub fn get_paths(&self) -> &Vec<ChangePath>
     {
-        &self.0
+      &self.0
+    }
+    pub fn get_paths_with_id(&self) -> Vec<(u64, &ChangePath)>
+    {
+        let mut hasher = DefaultHasher::new();
+        self.0.iter().map(|cp|
+        {
+            cp.hash(&mut hasher);
+            let id = hasher.finish();
+            (id, cp)
+        }).collect()
     }
     
     ///concat Vec<TargetPath> to one object and sorting items
@@ -134,6 +314,7 @@ impl TargetPath
         slf.sort();
         slf
     }
+    ///Отдает новый вектор с клонироваными номерами
     pub fn get_numbers(&self) -> Vec<Number>
     {
         self.0.iter().filter_map(|m|
@@ -147,6 +328,21 @@ impl TargetPath
         }).collect()
     }
 }
+
+impl AsMarkdown for TargetPath
+{
+    fn as_markdown(&self) -> String
+    {
+        let mut paths = String::new();
+        for p in &self.0
+        {
+            paths.push_str(&p.as_markdown());
+            paths.push(' ');
+        }
+        paths
+    }
+}
+
 
 
 ///определяем Header как наименьший а Indent как наибольший для правильной сортировки

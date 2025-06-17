@@ -1,6 +1,7 @@
 pub mod numbers;
 pub mod words;
 mod apply;
+pub mod diagramm;
 pub use apply::apply_all;
 pub mod consts;
 //mod tags;

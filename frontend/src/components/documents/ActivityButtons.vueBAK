@@ -1,0 +1,165 @@
+<template lang="pug">
+div.buttons-panel
+    n-date-picker(v-model:formatted-value="date"
+    size="large"
+        value-format="dd.MM.yyyy"
+        format="dd.MM.yyyy"
+        type="date"
+        @update:formatted-value="update_value"
+        clearable)
+    n-button(size="large" :type="states[0]" @click="all_docs_handler") Все
+    n-button(size="large" :type="states[1]" @click="ready_docs_handler") Готовы
+    n-button(size="large" :type="states[2]" @click="ready_checked_docs_handler" ) Проверены
+    //- n-button(size="large" :type="states[3]") Выгружены
+
+</template>
+        
+<script lang="ts">
+import { defineComponent, ref, onMounted, watch} from 'vue'
+import {NSpace, NButton, NDataTable, NIcon, NTooltip, NDivider, NDatePicker} from 'naive-ui'
+
+import { type Documents, type DateUserInfo, type Document} from '@/types/document';
+import {type Redaction } from '@/types/document'
+import UserIcon from '@/components/UserIcon.vue'
+import { InformationSquare } from '@vicons/carbon'
+import { date_str } from '@/services/helpers'
+import { DateFormat, DateTime } from '@/services/date'
+import { http_sevice } from '@/services/http_service';
+import { match } from 'ts-pattern';
+</script>
+
+<script lang="ts" setup>
+const props = defineProps<{
+    documents: Documents,
+    count: number,
+    offset: number,
+    limit: number,
+    is_loading: boolean
+}>()
+
+const emits = defineEmits<{
+    (e: 'update:documents', docs: Documents): void,
+    (e: 'update:count', cnt: number): void,
+    (e: 'update:is_loading', cnt: boolean): void,
+    (e: 'update:offset', cnt: number): void
+}>()
+const states = ref<('default'|'primary')[]>([
+    'default',
+    'default',
+    'default',
+    'default'
+]);
+const documents_view_type = ref<'all' | 'ready' | 'checked'>('all');
+const date = ref(DateTime.new().to_string(DateFormat.CalendarFormat))
+const update_value = (v: string| null) =>
+{
+    if(v)
+    {
+        localStorage.setItem('search_date', DateTime.parse(v).to_string(DateFormat.CalendarFormat))
+    }
+}
+
+const ready_docs_handler = async () =>
+{
+    documents_view_type.value = 'ready';
+    emits('update:offset', 0);
+    await ready_docs();
+}
+const ready_checked_docs_handler = async () =>
+{
+    documents_view_type.value = 'checked';
+    emits('update:offset', 0);
+    await checked_docs();
+}
+const all_docs_handler = async () =>
+{
+    documents_view_type.value = 'all';
+    emits('update:offset', 0);
+    await all_docs();
+}
+const ready_docs = async () =>
+{
+    documents_view_type.value = 'ready';
+    emits('update:is_loading', true);
+    const count = await http_sevice.get_ready_documents_count(DateTime.parse(date.value));
+    emits('update:count', count);
+    const docs = await http_sevice.get_ready_documents(DateTime.parse(date.value), props.limit, props.offset);
+    emits('update:documents', docs);
+    emits('update:is_loading', false);
+}
+const checked_docs = async () =>
+{
+    documents_view_type.value = 'checked';
+    emits('update:is_loading', true);
+    const count = await http_sevice.get_ready_checked_documents_count(DateTime.parse(date.value));
+    emits('update:count', count);
+    const docs = await http_sevice.get_ready_checked_documents(DateTime.parse(date.value), props.limit, props.offset);
+    emits('update:documents', docs);
+    emits('update:is_loading', false);
+}
+const all_docs = async () =>
+{
+    emits('update:is_loading', true);
+    const count = await http_sevice.get_documents_count(DateTime.parse(date.value));
+    emits('update:count', count);
+    const docs = await http_sevice.get_documents(DateTime.parse(date.value), props.limit, props.offset);
+    emits('update:documents', docs);
+    emits('update:is_loading', false);
+}
+onMounted(async ()=> 
+{
+    const s_date = localStorage.getItem('search_date');
+    if (s_date)
+    {
+        date.value = DateTime.parse(s_date).to_string(DateFormat.CalendarFormat)
+    }
+    if(documents_view_type.value == 'all')
+        await all_docs();
+    if(documents_view_type.value == 'ready')
+        await ready_docs();
+})
+//перелистываем страницы
+watch(()=> props.offset, async (n, o) => 
+{
+    if(n != o || (n == 0 && o == 0))
+    {
+        if(documents_view_type.value == 'all')
+            await all_docs();
+        if(documents_view_type.value == 'ready')
+            await ready_docs();
+    }
+})
+watch(documents_view_type, (n) => 
+{
+    match(n)
+    .with('all', () => states.value = [
+                            'primary',
+                            'default',
+                            'default',
+                            'default'
+                            ])
+    .with('ready', () => states.value = [
+                            'default',
+                            'primary',
+                            'default',
+                            'default'
+                            ])
+    .with('checked', () => states.value = [
+                            'default',
+                            'default',
+                            'primary',
+                            'default'
+                            ])
+}, {immediate: true})
+</script>
+    
+<style lang="scss" scoped>
+.buttons-panel
+{
+    display: flex;
+    flex-direction: row;
+    gap: 3px;
+    flex-wrap: nowrap;
+}
+
+</style>
