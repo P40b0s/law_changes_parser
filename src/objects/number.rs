@@ -7,6 +7,18 @@ use serde::{Deserialize, Serialize};
 use crate::{outputs::AsMarkdown, parsers::consts::{SUBSCRIPT, SUPERSCRIPT}};
 use crate::{error::ParserError, parsers::ITEM_NUMBER};
 
+
+#[derive(Debug, Serialize, Deserialize, Clone, Hash)]
+pub struct Number2
+{
+    ///Номер пунката статьи итд
+    pub number: String,
+    ///продолжение номера, но со стилем va верхним или нижним
+    pub va_number: Option<(String, VerticalAlignment)>,
+    ///символ после номера, например . или )
+    pub postfix: Option<String>
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Hash)]
 pub struct Number
 {

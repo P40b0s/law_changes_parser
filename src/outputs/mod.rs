@@ -1,2 +1,6 @@
 mod diagram;
-pub use diagram::{AsMarkdown, MermaidDiagram};
+pub use diagram::{MermaidDiagram};
+mod text;
+pub use text::{AsText, TextOutput};
+mod markdown;
+pub use markdown::{AsMarkdown, MarkdownOutput};

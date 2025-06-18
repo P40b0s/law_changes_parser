@@ -1,9 +1,5 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
-use crate::{change_action::ChangeAction, parsers::changes_parser::{Action, Change, ChangeType}, ChangesGraph};
-pub trait AsMarkdown
-{
-    fn as_markdown(&self) -> String;
-}
+use crate::{change_action::ChangeAction, outputs::AsMarkdown, parsers::changes_parser::{Action, Change, ChangeType}, ChangesGraph};
 
 pub struct MermaidDiagram
 {

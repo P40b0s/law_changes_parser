@@ -3,7 +3,7 @@ use std::{cmp::Ordering, hash::{DefaultHasher, Hash, Hasher}};
 use nom::IResult;
 use serde::{Deserialize, Serialize};
 
-use crate::{error::ParserError, objects::{header_type::HeaderType, item_type::ItemType, number::Number}, outputs::AsMarkdown, parsers::space1};
+use crate::{error::ParserError, objects::{header_type::HeaderType, item_type::ItemType, number::Number}, outputs::{AsMarkdown, AsText}, parsers::space1};
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, Hash)]
 pub enum ChangePath
 {
@@ -220,6 +220,14 @@ impl AsMarkdown for ChangePath
     }
 }
 
+impl AsText for ChangePath
+{
+    fn as_text(&self) -> String 
+    {
+        self.as_markdown()
+    }
+}
+
 // #[derive(Debug, Serialize, Deserialize)]
 // pub enum Changes<O>
 // {
@@ -345,6 +353,19 @@ impl AsMarkdown for TargetPath
         for p in &self.0
         {
             paths.push_str(&p.as_markdown());
+            paths.push(' ');
+        }
+        paths
+    }
+}
+impl AsText for TargetPath
+{
+    fn as_text(&self) -> String 
+    {
+        let mut paths = String::new();
+        for p in &self.0
+        {
+            paths.push_str(&p.as_text());
             paths.push(' ');
         }
         paths

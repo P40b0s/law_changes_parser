@@ -461,6 +461,14 @@ mod tests
         let p = super::words_operations(s).unwrap();
         info!("тест строки ->{} остаток токенов ->{}| путь->{}", s, p.0, serde_json::to_string_pretty(&p.1).unwrap());
     }
+    #[test]
+    fn test_words_operation8()
+    {
+        logger::StructLogger::new_default();
+        let s = r#"4) в абзаце пятом пункта 6 статьи 36^12-1 слово "квалифицированного" исключить, слова "единой системы идентификации и аутентификации" заменить словами "информационной системы головного удостоверяющего центра, функции которого осуществляет уполномоченный федеральный орган исполнительной власти";"#;
+        let p = super::words_operations(s).unwrap();
+        info!("тест строки ->{} остаток токенов ->{}| путь->{}", s, p.0, serde_json::to_string_pretty(&p.1).unwrap());
+    }
 
     #[test]
     fn test_repeat_exclude_words_fn()

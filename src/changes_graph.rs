@@ -1,5 +1,7 @@
 use std::collections::{HashMap, VecDeque};
 
+use indexmap::IndexMap;
+
 use crate::{change_path::ChangePath, parsers::changes_parser::{Change, Changes}};
 
 
@@ -27,6 +29,32 @@ pub struct ChangesGraph
     pub edges: Vec<ChangeEdge>,
     pub total_changes: u32,
 }
+impl ChangesGraph
+{
+    pub fn get_parent_nodes<'a>(&'a self, node: &'a ChangeNode) -> Vec<&'a ChangeNode>
+    {
+        let mut nodes = Vec::new();
+        let mut queue = VecDeque::new();
+        if node.change.is_some()
+        {
+            queue.push_back(node.id);
+            while let Some(id) = queue.pop_front()
+            {
+                if let Some(e) = self.edges.iter().find(|f| f.to_id == id)
+                {
+                    if let Some(n) = self.nodes.iter().find(|f| f.id == e.from_id)
+                    {
+                        nodes.push(n);
+                        queue.push_back(n.id);
+                    }
+                    
+                }
+            }
+        }
+        nodes.reverse();
+        nodes
+    }
+}
 
 impl Into<ChangesGraph> for Changes
 {
@@ -38,7 +66,8 @@ impl Into<ChangesGraph> for Changes
         queue.push_back((self.0, None, 0));
         while let Some((current_changes, parent, level)) = queue.pop_front() 
         {
-            let mut groups = HashMap::new();
+            //нам нужно соблюдать порядок, поэтому возьму indexmap
+            let mut groups = IndexMap::new();
             for change in current_changes.into_iter()
             {
                 if let Some(path) = change.target_path.get_path_by_level(level)
@@ -116,7 +145,7 @@ impl Into<ChangesGraph> for Changes
 #[cfg(test)]
 mod tests
 {
-    use crate::{parsers::changes_parser::Changes, ChangesGraph};
+    use crate::{outputs::AsMarkdown, parsers::changes_parser::Changes, ChangesGraph};
 
     #[test]
     fn test_graph()
@@ -128,9 +157,20 @@ mod tests
         logger::debug!("Total nodes : {}", gr.nodes.len());
         logger::debug!("Total edges: {}", gr.edges.len());
         logger::debug!("Total changes: {}", gr.total_changes);
-        assert_eq!(gr.nodes.len(), 11);
-        assert_eq!(gr.edges.len(), 8);
-        assert_eq!(gr.total_changes, 6);
+        for n in &gr.nodes
+        {
+            let path = gr.get_parent_nodes(n);
+            if !path.is_empty()
+            {
+                let fullpath: Vec<String> = path.iter().map(|m| m.change_path.as_markdown()).collect();
+                let fullpath = fullpath.join("->");
+                let fullpath = [&fullpath, "->", &n.change_path.as_markdown()].concat();
+                logger::debug!("fullpath: {}", fullpath);
+            }
+        }
+        assert_eq!(gr.nodes.len(), 13);
+        assert_eq!(gr.edges.len(), 9);
+        assert_eq!(gr.total_changes, 7);
     }
 
      #[test]
@@ -140,6 +180,10 @@ mod tests
         let test_data = include_str!("..\\test_data\\test_2.txt");
         let changes_list = Changes::get_changes(test_data);
         let graph: ChangesGraph = changes_list.into();
+        for n in graph.nodes
+        {
+            logger::debug!("{}", n.change_path.as_markdown());
+        }
         //logger::debug!("{}", serde_json::to_string_pretty(&changes_list).unwrap())
     }
 }
