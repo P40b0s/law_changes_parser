@@ -4,7 +4,7 @@ use nom::
     branch::alt, bytes::complete::{is_a, tag}, combinator::{all_consuming, not, opt, verify}, error::ParseError, sequence::{delimited, pair, separated_pair}, IResult, Parser
 };
 use serde::{Deserialize, Serialize};
-use crate::parsers::{consts::{SUBSCRIPT, SUPERSCRIPT}, diagramm::AsMarkdown};
+use crate::{outputs::AsMarkdown, parsers::consts::{SUBSCRIPT, SUPERSCRIPT}};
 use crate::{error::ParserError, parsers::ITEM_NUMBER};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Hash)]

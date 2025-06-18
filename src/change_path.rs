@@ -3,7 +3,7 @@ use std::{cmp::Ordering, hash::{DefaultHasher, Hash, Hasher}};
 use nom::IResult;
 use serde::{Deserialize, Serialize};
 
-use crate::{error::ParserError, objects::{header_type::HeaderType, item_type::ItemType, number::Number}, parsers::{diagramm::AsMarkdown, space1}};
+use crate::{error::ParserError, objects::{header_type::HeaderType, item_type::ItemType, number::Number}, outputs::AsMarkdown, parsers::space1};
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, Hash)]
 pub enum ChangePath
 {
@@ -133,39 +133,35 @@ impl ChangePath
         }
     }
 }
-impl AsMarkdown for ChangePath
-{
-    fn as_markdown(&self) -> String
-    {
-        self.as_markdown()
-    }
-    // fn as_markdown(&self) -> String
-    // {
-    //     match self
-    //     {
-    //         ChangePath::Header { number: n, header_type: _ } =>
-    //         {
-    //             n.as_markdown()
-    //         }
-    //         ChangePath::Item { number: n, item_type: _ } =>
-    //         {
-    //             n.as_markdown()
-    //         }
-    //         ChangePath::Indent(n) => 
-    //         {
-    //             Number 
-    //             {
-    //                 number: n.to_string(),
-    //                 va_number: None,
-    //                 postfix: None
-    //             }.as_markdown()
-    //         } 
-    //     }
-    // }
-}
+// impl AsMarkdown for ChangePath
+// {
+//     fn as_markdown(&self) -> String
+//     {
+//         match self
+//         {
+//             ChangePath::Header { number: n, header_type: _ } =>
+//             {
+//                 n.as_markdown()
+//             }
+//             ChangePath::Item { number: n, item_type: _ } =>
+//             {
+//                 n.as_markdown()
+//             }
+//             ChangePath::Indent(n) => 
+//             {
+//                 Number 
+//                 {
+//                     number: n.to_string(),
+//                     va_number: None,
+//                     postfix: None
+//                 }.as_markdown()
+//             } 
+//         }
+//     }
+// }
 
  
-impl AsMarkdown for &ChangePath
+impl AsMarkdown for ChangePath
 {
     fn as_markdown(&self) -> String
     {
@@ -224,18 +220,18 @@ impl AsMarkdown for &ChangePath
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub enum Changes<O>
-{
-    ChangeWords
-    {
-        from: String,
-        to: String
-    },
-    DeleteWords(String),
-    ///Замена структурной единицы, например статьи целиком, нужно брать объект в том формате в котором будем его парсить
-    ChangeObject(O)
-}
+// #[derive(Debug, Serialize, Deserialize)]
+// pub enum Changes<O>
+// {
+//     ChangeWords
+//     {
+//         from: String,
+//         to: String
+//     },
+//     DeleteWords(String),
+//     ///Замена структурной единицы, например статьи целиком, нужно брать объект в том формате в котором будем его парсить
+//     ChangeObject(O)
+// }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TargetPath(Vec<ChangePath>);
 impl TargetPath
@@ -292,15 +288,27 @@ impl TargetPath
     {
       &self.0
     }
-    pub fn get_paths_with_id(&self) -> Vec<(u64, &ChangePath)>
+    pub fn get_paths_with_id(&self) -> Vec<(u64, ChangePath)>
     {
         let mut hasher = DefaultHasher::new();
         self.0.iter().map(|cp|
         {
             cp.hash(&mut hasher);
             let id = hasher.finish();
-            (id, cp)
+            (id, cp.clone())
         }).collect()
+    }
+    pub fn get_path_by_level(&self, level: usize) -> Option<(u64, ChangePath)>
+    {
+        let mut paths = self.get_paths_with_id();
+        if paths.get(level).is_some()
+        {
+            Some(paths.swap_remove(level))
+        }
+        else
+        {
+            None
+        }
     }
     
     ///concat Vec<TargetPath> to one object and sorting items
