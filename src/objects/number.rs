@@ -1,10 +1,10 @@
 use std::{cmp::Ordering, str::FromStr};
 use nom::
 {
-    branch::alt, bytes::complete::{is_a, tag}, combinator::{all_consuming, not, opt, verify}, error::ParseError, sequence::{delimited, pair, separated_pair}, IResult, Parser
+    branch::{alt, Choice}, bytes::complete::{is_a, tag}, character::{complete::digit1, one_of}, combinator::{all_consuming, not, opt, verify}, error::ParseError, sequence::{delimited, pair, separated_pair}, IResult, Parser
 };
 use serde::{Deserialize, Serialize};
-use crate::{outputs::AsMarkdown, parsers::consts::{SUBSCRIPT, SUPERSCRIPT}};
+use crate::{outputs::AsMarkdown, parsers::{consts::{SUBSCRIPT, SUPERSCRIPT}, ALPHA_NUMERIC}};
 use crate::{error::ParserError, parsers::ITEM_NUMBER};
 
 
@@ -13,10 +13,97 @@ pub struct Number2
 {
     ///Номер пунката статьи итд
     pub number: String,
+    pub number_digit: Option<u32>,
     ///продолжение номера, но со стилем va верхним или нижним
     pub va_number: Option<(String, VerticalAlignment)>,
     ///символ после номера, например . или )
     pub postfix: Option<String>
+}
+// impl Number2
+// {
+//     pub fn parse(s: &str) -> IResult<&str, Number2, ParserError>
+//     {
+//         let res = ((
+//             alt((is_alpha_number, is_digit_number)),
+//             opt(alt((is_subscript, is_superscript)))
+//         )).parse(s);
+//         //если абзац идет первым словом то is_a его сжирал, делаем доп условие
+//         let num = verify(is_a(ITEM_NUMBER), |s: &str| !s.starts_with("абза"));
+//         let mut normal_parser =  
+//         pair(
+//         num, 
+//         opt(alt((tag(")"), tag("."))))
+//         );
+//         if let Ok((remains, (first_number_part , second_number_part))) = is_superscript_number(s)
+//         {
+//             let (remains, postfix) = opt(alt((tag(")"), tag(".")))).parse(remains)?;
+//             return Ok((remains, Number
+//             {
+//                 number: first_number_part.to_owned(),
+//                 va_number: Some((second_number_part.to_owned(), VerticalAlignment::Superscript)),
+//                 postfix: postfix.and_then(|a| Some(a.to_owned()))
+//             }))
+//         }
+//         if let Ok((remains, (first_number_part , second_number_part))) = is_subscript_number(s)
+//         {
+//             let (remains, postfix) = opt(alt((tag(")"), tag(".")))).parse(remains)?;
+//             return Ok((remains, Number
+//             {
+//                 number: first_number_part.to_owned(),
+//                 va_number: Some((second_number_part.to_owned(), VerticalAlignment::Subscript)),
+//                 postfix: postfix.and_then(|a| Some(a.to_owned()))
+//             }))
+//         }
+
+//         let (remains, (number, postfix)) = 
+//         normal_parser.parse(s)?;
+//         Ok((remains, Number
+//         {
+//             number: number.to_owned(),
+//             va_number: None,
+//             postfix: postfix.and_then(|a| Some(a.to_owned()))
+//         })
+//         )
+//     }
+// }
+
+///например а в подпункте а)
+fn is_alpha_number(s: &str) -> IResult<&str, &str, ParserError>
+{
+    let tags = [tag("а"),tag("б"),tag("в"),tag("г"),tag("д"),tag("е"),tag("ё"),tag("ж"),tag("з"),tag("и"),tag("й"),tag("к"),tag("л"),tag("м"),tag("н"),tag("о"),tag("п"),tag("р"),tag("с"),tag("т"),tag("у"),tag("ф"),tag("х"),tag("ц"),tag("ч"),tag("ш"),tag("щ"),tag("ъ"),tag("ы"),tag("ь"),tag("э"),tag("ю"),tag("я")];
+    alt(tags).parse(s)
+    //let res = one_of("абвгдеёжзийклмнопрстуфхцчшщъыьэюя").parse(s)?;
+}
+fn is_digit_number(s: &str) -> IResult<&str, &str, ParserError>
+{
+    digit1(s)
+}
+fn is_postfix(s: &str) -> IResult<&str, &str, ParserError>
+{
+    alt((tag(")"), tag("."))).parse(s)
+}
+
+fn is_extended_number(s: &str) -> IResult<&str, (u32, Option<u32>), ParserError>
+{
+    let n1 = digit1(s)?;
+    let separator = opt(tag("-")).parse(n1.0)?;
+    if let Some(_) = separator.1
+    {
+        let n2 = digit1(separator.0)?;
+        Ok((n2.0, (n1.1.parse().unwrap(), Some(n2.1.parse().unwrap()))))
+    }
+    else 
+    {
+        Ok((n1.0, (n1.1.parse().unwrap(), None)))  
+    }
+}
+fn is_superscript(s: &str) -> IResult<&str, &str, ParserError>
+{
+    tag("^").parse(s)
+}
+fn is_subscript(s: &str) -> IResult<&str, &str, ParserError>
+{
+    tag("^").parse(s)
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Hash)]
@@ -481,5 +568,14 @@ mod tests
             va_number: None
         };
         assert_eq!(n1 == n2, true);
+    }
+
+     #[test]
+    fn test_parsers_1()
+    {
+        let extended_number = "1-23";
+        let parsed = super::is_extended_number(extended_number).unwrap();
+        assert_eq!(parsed.1.0, 1);
+        assert_eq!(parsed.1.1, Some(23));
     }
 }
