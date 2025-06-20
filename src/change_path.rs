@@ -54,61 +54,7 @@ impl ChangePath
             ChangePath::Indent(_) => 6
         }
     }
-    // pub fn as_markdown(&self) -> String
-    // {
-    //     let mut output = String::new();
-    //     match self
-    //     {
-    //         ChangePath::Header { number: n, header_type: ht } =>
-    //         {
-    //             match ht
-    //             {
-    //                 HeaderType::Chapter => 
-    //                 {
-    //                     output.push_str("раздел ");
-    //                     output.push_str(&n.get_number_as_markdown());
-    //                 }
-    //                 HeaderType::Section => 
-    //                 {
-    //                     output.push_str("глава ");
-    //                     output.push_str(&n.get_number_as_markdown());
-    //                 }
-    //                 HeaderType::Article => 
-    //                 {
-    //                     output.push_str("статья ");
-    //                     output.push_str(&n.get_number_as_markdown());
-    //                 }
-    //             }
-    //         }
-    //         ChangePath::Item { number: n, item_type: it } =>
-    //         {
-    //             match it
-    //             {
-    //                 ItemType::Part => 
-    //                 {
-    //                     output.push_str("часть ");
-    //                     output.push_str(&n.get_number_as_markdown());
-    //                 }
-    //                 ItemType::Item => 
-    //                 {
-    //                     output.push_str("пункт ");
-    //                     output.push_str(&n.get_number_as_markdown());
-    //                 }
-    //                 ItemType::Subitem => 
-    //                 {
-    //                     output.push_str("подпункт ");
-    //                     output.push_str(&n.get_number_as_markdown());
-    //                 }
-    //             }
-    //         }
-    //         ChangePath::Indent(n) => 
-    //         {
-    //             output.push_str("абзац ");
-    //             output.push_str(&n.to_string());
-    //         }
-    //     }
-    //     output
-    // }
+   
     pub fn get_number(&self) -> Number
     {
         match self
@@ -133,34 +79,7 @@ impl ChangePath
         }
     }
 }
-// impl AsMarkdown for ChangePath
-// {
-//     fn as_markdown(&self) -> String
-//     {
-//         match self
-//         {
-//             ChangePath::Header { number: n, header_type: _ } =>
-//             {
-//                 n.as_markdown()
-//             }
-//             ChangePath::Item { number: n, item_type: _ } =>
-//             {
-//                 n.as_markdown()
-//             }
-//             ChangePath::Indent(n) => 
-//             {
-//                 Number 
-//                 {
-//                     number: n.to_string(),
-//                     va_number: None,
-//                     postfix: None
-//                 }.as_markdown()
-//             } 
-//         }
-//     }
-// }
 
- 
 impl AsMarkdown for ChangePath
 {
     fn as_markdown(&self) -> String

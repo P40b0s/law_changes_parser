@@ -4,20 +4,34 @@ use nom::
     branch::{alt, Choice}, bytes::complete::{is_a, tag}, character::{complete::digit1, one_of}, combinator::{all_consuming, not, opt, verify}, error::ParseError, sequence::{delimited, pair, separated_pair}, IResult, Parser
 };
 use serde::{Deserialize, Serialize};
-use crate::{outputs::AsMarkdown, parsers::{consts::{SUBSCRIPT, SUPERSCRIPT}, ALPHA_NUMERIC}};
+use crate::{outputs::AsMarkdown, parsers::{consts::{SUBSCRIPT, SUPERSCRIPT}, space1, ALPHA_NUMERIC}};
 use crate::{error::ParserError, parsers::ITEM_NUMBER};
 
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum NumberIndex
+{
+    Subscript,
+    Superscript,
+    Normal
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, Hash)]
 pub struct Number2
 {
     ///Номер пунката статьи итд
     pub number: String,
-    pub number_digit: Option<u32>,
     ///продолжение номера, но со стилем va верхним или нижним
-    pub va_number: Option<(String, VerticalAlignment)>,
+    pub number_index: NumberIndex,
     ///символ после номера, например . или )
-    pub postfix: Option<String>
+    pub postfix: Option<String>,
+    pub next: Option<Box<Number2>>
+}
+impl Number2
+{
+    pub fn get_last()
+    {
+
+    }
 }
 // impl Number2
 // {
@@ -80,30 +94,102 @@ fn is_digit_number(s: &str) -> IResult<&str, &str, ParserError>
 }
 fn is_postfix(s: &str) -> IResult<&str, &str, ParserError>
 {
-    alt((tag(")"), tag("."))).parse(s)
+    alt((tag(")"), tag("."), tag("-"))).parse(s)
 }
 
-fn is_extended_number(s: &str) -> IResult<&str, (u32, Option<u32>), ParserError>
+fn parse<'a>(s: &'a str) -> IResult<&'a str, Number2, ParserError>
 {
-    let n1 = digit1(s)?;
-    let separator = opt(tag("-")).parse(n1.0)?;
-    if let Some(_) = separator.1
+    let index = NumberIndex::Normal;
+    complex_number_parser(s, index, None)
+}
+//FIXME сейчас устанавливается только 1 чилд, надо искать последнюю ноду и добалять туда
+fn complex_number_parser<'a>(s: &'a str, index:  NumberIndex, mut input_number: Option<Number2>) -> IResult<&'a str, Number2, ParserError>
+{
+    logger::debug!("input {} index: {:?} number: {:?}", s, index, input_number.as_ref());
+    if let Ok((r, _)) = is_superscript(s)
     {
-        let n2 = digit1(separator.0)?;
-        Ok((n2.0, (n1.1.parse().unwrap(), Some(n2.1.parse().unwrap()))))
+        return complex_number_parser(r, NumberIndex::Superscript, input_number);
+    }
+    if let Ok((r, _)) = is_subscript(s)
+    {
+        return complex_number_parser(r, NumberIndex::Subscript, input_number);
+    }
+    logger::debug!("input {} index: {:?} number: {:?}", s, index, input_number.as_ref());
+    let (mut remains, number) = alt((is_alpha_number, is_digit_number)).parse(s)?;
+    logger::debug!("input {} index: {:?} number: {:?}", remains, index, input_number.as_ref());
+    let postfix = is_postfix(remains).map_or(None, |m|
+    {
+        remains = m.0;
+        Some(m.1.to_owned())
+    });
+    logger::debug!("input {} index: {:?} number: {:?}", remains, index, input_number.as_ref());
+    let new_num = Number2
+    {
+        number: number.to_owned(),
+        number_index: index,
+        postfix,
+        next: None
+    };
+    logger::debug!("input {} index: {:?} new_number: {:?}", remains, index, &new_num);
+    let space: Result<(&str, &str), nom::Err<ParserError>> = space1(remains);
+    if space.is_ok()
+    {
+       
+        if let Some(mut n) = input_number
+        {
+            n.next = Some(Box::new(new_num));
+            logger::debug!("input {} index: {:?} number: {:?}", remains, index, &n);
+            Ok((remains, n))
+        }
+        else 
+        {
+            logger::debug!("input {} index: {:?} number: {:?}", remains, index, &new_num);
+            Ok((remains, new_num))    
+        }
     }
     else 
     {
-        Ok((n1.0, (n1.1.parse().unwrap(), None)))  
+        if let Some(n) = input_number.as_mut()
+        {
+            n.next = Some(Box::new(new_num));
+            logger::debug!("input {} index: {:?} number: {:?}", remains, index, n);
+            complex_number_parser(remains, index, input_number)
+        }
+        else 
+        {
+            logger::debug!("input {} index: {:?} number: {:?}", remains, index, &new_num);
+            complex_number_parser(remains, index, Some(new_num))
+        }
     }
 }
+
+// fn is_extended_number(s: &str) -> IResult<&str, (u32, Option<u32>), ParserError>
+// {
+//     let n1 = digit1(s)?;
+//     let separator = opt(tag("-")).parse(n1.0);
+//     if let Ok(_) = separator
+//     {
+//         let (remains, number) = separator?;
+//         if let Some(n) = number
+//         {
+//             let n2 = digit1(separator.0)?;
+//             Ok((n2.0, (n1.1, Some(n2.1))))
+//         }
+//     }
+//     else 
+//     {
+//         Ok((n1.0, (n1.1.parse().unwrap(), None)))
+//     }
+// }
+
 fn is_superscript(s: &str) -> IResult<&str, &str, ParserError>
 {
     tag("^").parse(s)
 }
+
 fn is_subscript(s: &str) -> IResult<&str, &str, ParserError>
 {
-    tag("^").parse(s)
+    tag("_").parse(s)
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Hash)]
@@ -116,6 +202,7 @@ pub struct Number
     ///символ после номера, например . или )
     pub postfix: Option<String>
 }
+
 impl Number
 {
     pub fn parse(s: &str) -> IResult<&str, Number, ParserError>
@@ -127,6 +214,7 @@ impl Number
         num, 
         opt(alt((tag(")"), tag("."))))
         );
+
         if let Ok((remains, (first_number_part , second_number_part))) = is_superscript_number(s)
         {
             let (remains, postfix) = opt(alt((tag(")"), tag(".")))).parse(remains)?;
@@ -137,6 +225,7 @@ impl Number
                 postfix: postfix.and_then(|a| Some(a.to_owned()))
             }))
         }
+
         if let Ok((remains, (first_number_part , second_number_part))) = is_subscript_number(s)
         {
             let (remains, postfix) = opt(alt((tag(")"), tag(".")))).parse(remains)?;
@@ -184,6 +273,7 @@ impl AsMarkdown for Number
                 }
             }
         }
+
         if let Some(postfix) = self.postfix.as_ref()
         {
             n.push_str(postfix);
@@ -570,12 +660,34 @@ mod tests
         assert_eq!(n1 == n2, true);
     }
 
-     #[test]
+    #[test]
     fn test_parsers_1()
     {
-        let extended_number = "1-23";
-        let parsed = super::is_extended_number(extended_number).unwrap();
-        assert_eq!(parsed.1.0, 1);
-        assert_eq!(parsed.1.1, Some(23));
+        logger::StructLogger::new_default();
+        let val = "1-2^2-3) ";
+        let parsed = super::parse(val).unwrap();
+        logger::debug!("{:?}", parsed);
+    }
+    #[test]
+    fn test_parsers_2()
+    {
+        let val = "а)";
+        let parsed = super::is_alpha_number(val).unwrap();
+        assert_eq!(parsed.1, "а");
+    }
+    #[test]
+    fn test_parsers_3()
+    {
+        let val = "1)";
+        let parsed = super::is_digit_number(val).unwrap();
+        assert_eq!(parsed.1, "1");
+    }
+     #[test]
+    fn test_parsers_4()
+    {
+        let val = "1)";
+        
+        let parsed = super::is_digit_number(val).unwrap();
+        assert_eq!(parsed.1, "1");
     }
 }

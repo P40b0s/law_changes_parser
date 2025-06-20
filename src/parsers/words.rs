@@ -452,7 +452,10 @@ mod tests
         let s = r#"а) в части 1 слова "и использования" исключить, после слов ", если на" дополнить словом "такие";"#;
         let p = super::words_operations(s).unwrap();
         info!("тест строки ->{} остаток токенов ->{}| путь->{}", s, p.0, serde_json::to_string_pretty(&p.1).unwrap());
+        //FIXME сделать assert для всех тестов
+        assert_eq!(p.0.is_empty(), true);
     }
+
     #[test]
     fn test_words_operation6()
     {
@@ -461,6 +464,7 @@ mod tests
         let p = super::words_operations(s).unwrap();
         info!("тест строки ->{} остаток токенов ->{}| путь->{}", s, p.0, serde_json::to_string_pretty(&p.1).unwrap());
     }
+
     #[test]
     fn test_words_operation8()
     {
