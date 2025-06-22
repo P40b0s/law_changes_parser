@@ -3,7 +3,7 @@ use nom::
     branch::alt, bytes::complete::tag, sequence::{pair}, IResult, Parser
 };
 
-use crate::{change_path::TargetPath, error::ParserError, objects::number::Number};
+use crate::{change_path::TargetPath, error::ParserError, objects::Number};
 
 use super::{paths, in_new_edition};
 use super::space1;

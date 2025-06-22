@@ -3,7 +3,7 @@ use std::{cmp::Ordering, hash::{DefaultHasher, Hash, Hasher}};
 use nom::IResult;
 use serde::{Deserialize, Serialize};
 
-use crate::{error::ParserError, objects::{header_type::HeaderType, item_type::ItemType, number::Number}, outputs::{AsMarkdown, AsText}, parsers::space1};
+use crate::{error::ParserError, objects::{header_type::HeaderType, item_type::ItemType, Number}, outputs::{AsMarkdown, AsText}, parsers::space1};
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, Hash)]
 pub enum ChangePath
 {
@@ -69,13 +69,13 @@ impl ChangePath
             }
             ChangePath::Indent(n) => 
             {
-                Number 
-                {
-                    number: n.to_string(),
-                    number_index: crate::objects::number::NumberIndex::Normal,
-                    postfix: None,
-                    next: None
-                }
+                Number::parse(&n.to_string()).unwrap().1 
+                // {
+                //     number: n.to_string(),
+                //     number_index: crate::objects::NumberIndex::Normal,
+                //     postfix: None,
+                //     next: None
+                // }
             } 
         }
     }
@@ -413,7 +413,7 @@ impl PartialEq for ChangePath
 #[cfg(test)]
 mod tests
 {
-    use crate::{change_path::ChangePath, objects::{header_type::HeaderType, number::Number}};
+    use crate::{change_path::ChangePath, objects::{header_type::HeaderType, Number}};
 
     #[test]
     fn test_path_1()
@@ -452,6 +452,18 @@ mod tests
         let indent = ChangePath::Indent(3);
         let header = ChangePath::Header { number: Number::parse("20").unwrap().1, header_type: "Статья".parse().unwrap() };
         let item = ChangePath::Item { number: Number::parse("2)").unwrap().1, item_type: "пункт".parse().unwrap()  };
+        let mut items = vec![item.clone(), indent.clone(), header.clone()];
+        items.sort();
+        assert_eq!(items[0], header);
+        assert_eq!(items[1], item);
+        assert_eq!(items[2], indent);
+    }
+     #[test]
+    fn test_ord2()
+    { 
+        let indent = ChangePath::Indent(3);
+        let header = ChangePath::Header { number: Number::parse("25").unwrap().1, header_type: "Статья".parse().unwrap() };
+        let item = ChangePath::Item { number: Number::parse("5").unwrap().1, item_type: "пункт".parse().unwrap()  };
         let mut items = vec![item.clone(), indent.clone(), header.clone()];
         items.sort();
         assert_eq!(items[0], header);

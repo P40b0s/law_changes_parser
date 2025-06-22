@@ -7,7 +7,7 @@ use nom::
 };
 use crate::change_path::TargetPath;
 
-use crate::objects::number::Number;
+use crate::objects::Number;
 use crate::parsers::paths;
 use crate::{error::ParserError};
 

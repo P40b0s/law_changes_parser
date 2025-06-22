@@ -2,7 +2,7 @@ use nom::
 {
     branch::{alt, permutation}, bytes::complete::{is_a, tag, take_until}, character::complete::anychar, combinator::{eof, map}, multi::{many1, many_till}, sequence::{delimited, pair, preceded, separated_pair, tuple}, IResult, Parser
 };
-use crate::{change_action::ChangeAction, change_path::TargetPath, error::ParserError, objects::number::Number};
+use crate::{change_action::ChangeAction, change_path::TargetPath, error::ParserError, objects::Number};
 
 use super::{chars::end_indent_char, lost_power, paths, space1, tags::{next_is_content_not_eof, in_new_edition_not_eof}, consts, space0};
 

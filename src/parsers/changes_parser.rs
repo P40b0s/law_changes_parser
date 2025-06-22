@@ -6,7 +6,7 @@ use nom::
 };
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
-use crate::{change_action::ChangeAction, change_path::{ChangePath, TargetPath}, error::ParserError, objects::{number::{Number}, remain_tokens::RemainTokens}, parsers::{paths, space0}};
+use crate::{change_action::ChangeAction, change_path::{ChangePath, TargetPath}, error::ParserError, objects::{Number, remain_tokens::RemainTokens}, parsers::{paths, space0}};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Action
@@ -221,11 +221,13 @@ impl Changes
         {
             return Some(RemainTokens::new(s, remains));
         }
-        changes_list.try_add_text(s);
         //ни один кейс не прошел значит это изменение на отдельной строке
+        changes_list.try_add_text(s);
+        
         return None;
         
     }
+    
 
     ///`Наименование изложить в следующей редакции...`
     /// нечто связанное с наименованием
@@ -244,6 +246,8 @@ impl Changes
         Ok((remain, ""))
     }
 }
+
+
 ///v1 - без рекурсии используя кольцевой буфер
 // #[allow(dead_code)]
 // fn mermaid_recursion(changes: Vec<Change>, dia: &mut String, changes_count: &mut u32)

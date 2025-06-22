@@ -1,4 +1,4 @@
-use crate::objects::number::Number;
+use crate::objects::Number;
 
 #[derive(serde::Serialize, Clone, PartialEq, serde::Deserialize, Debug, Hash)]
 pub enum ChangeAction

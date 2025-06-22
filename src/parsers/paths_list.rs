@@ -1,7 +1,7 @@
 use jsonpath_rust::parser::test;
 use nom::{character::complete::space1, sequence::pair, IResult, Parser};
 
-use crate::{error::ParserError, objects::number::Number};
+use crate::{error::ParserError, objects::Number};
 
 pub fn get_path_list()
 {

@@ -3,7 +3,7 @@ use nom::
     branch::alt, bytes::complete::{is_a, tag, tag_no_case}, combinator::map, sequence::pair, IResult, Parser
 };
 
-use crate::{change_action::ChangeAction, change_path::TargetPath, error::ParserError, objects::{number::Number, remain_tokens::RemainTokens}};
+use crate::{change_action::ChangeAction, change_path::TargetPath, error::ParserError, objects::{Number, remain_tokens::RemainTokens}};
 
 use super::{ITEM_NUMBER, paths, next_is_content, in_new_edition};
 use super::{space0, space1};
