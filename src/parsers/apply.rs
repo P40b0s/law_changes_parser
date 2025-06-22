@@ -11,7 +11,7 @@ use crate::objects::number::Number;
 use crate::parsers::paths;
 use crate::{error::ParserError};
 
-use super::{ numbers::parse_number, next_is_content, apply};
+use super::{ next_is_content, apply};
 use super::space1;
 
 ///`1) статью 1 дополнить частью 1`
@@ -19,7 +19,7 @@ use super::space1;
 /// второй path это что туда нужно дополнить: частью 1
 fn number_target_path_apply_path(s: &str) -> IResult<&str, (TargetPath, TargetPath), ParserError>
 {
-    let (remains, (_,_, p1, _, p2, _)) = ((parse_number, space1, paths, apply, paths, next_is_content)).parse(s)?;
+    let (remains, (_,_, p1, _, p2, _)) = ((Number::parse, space1, paths, apply, paths, next_is_content)).parse(s)?;
     Ok((remains, (p1, p2)))
 }
 ///`1) дополнить частью 1`
@@ -35,6 +35,13 @@ fn apply_indent(s: &str) -> IResult<&str, TargetPath, ParserError>
 {
     let (remains, (_,_, _, _)) = ((apply, tag("абзацем"), space1, next_is_content)).parse(s)?;
     Ok((remains, TargetPath::new()))
+}
+///`дополнить абзацем`
+/// path это что туда нужно дополнить: частью 1
+fn apply_indent_with_number(s: &str) -> IResult<&str, TargetPath, ParserError>
+{
+    let (remains, (_,_, path, _, _)) = ((apply, tag("абзацем"), paths, space1, next_is_content)).parse(s)?;
+    Ok((remains, path))
 }
 
 ///`дополнить  (частью №, статьей №, абзацем №) `
@@ -53,6 +60,7 @@ pub fn apply_all(s: &str) -> IResult<&str, (Option<TargetPath>, TargetPath), Par
     let result = alt((
         apply_items_with_number,
         apply_indent,
+        apply_indent_with_number,
         number_apply_items_with_number,
     )).parse(s) as IResult<&str, TargetPath, ParserError>;
     if let Ok(r) = result
@@ -84,6 +92,7 @@ mod tests
             r#"2) дополнить пунктом 8 следующего содержания:"#,
             "дополнить новым абзацем девятым следующего содержания:",
             r#"дополнить абзацем следующего содержания:"#,
+            r#"дополнить абзацем третьим следующего содержания:"#,
             r#"дополнить новыми абзацами седьмым - десятым и абзацами одиннадцатым и двенадцатым следующего содержания:"#,
             r#"г) дополнить пунктами 16 - 22 следующего содержания:"#,
             r#"7) главу 2 дополнить статьями 9^1 и 9^2 следующего содержания:"#,

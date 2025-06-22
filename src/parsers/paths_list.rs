@@ -8,7 +8,7 @@ pub fn get_path_list()
     let mut test_vec = Vec::new();
     for s in TEST_DATA.lines()
     {
-        let num: IResult<&str, (Number, &str), ParserError> = pair(super::numbers::parse_number, space1).parse(s);
+        let num: IResult<&str, (Number, &str), ParserError> = pair(Number::parse, space1).parse(s);
         if let Ok(n) = num
         {
             if let Ok(vecs) = super::path_plus_number::paths(n.0)

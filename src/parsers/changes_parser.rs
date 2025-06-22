@@ -6,7 +6,7 @@ use nom::
 };
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
-use crate::{change_action::ChangeAction, change_path::{ChangePath, TargetPath}, error::ParserError, objects::{number::{Number, VerticalAlignment}, remain_tokens::RemainTokens}, parsers::{paths, space0}};
+use crate::{change_action::ChangeAction, change_path::{ChangePath, TargetPath}, error::ParserError, objects::{number::{Number}, remain_tokens::RemainTokens}, parsers::{paths, space0}};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Action

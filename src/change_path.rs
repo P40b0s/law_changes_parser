@@ -72,8 +72,9 @@ impl ChangePath
                 Number 
                 {
                     number: n.to_string(),
-                    va_number: None,
-                    postfix: None
+                    number_index: crate::objects::number::NumberIndex::Normal,
+                    postfix: None,
+                    next: None
                 }
             } 
         }

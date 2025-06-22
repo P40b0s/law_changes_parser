@@ -4,7 +4,7 @@ use nom::
     branch::alt, bytes::complete::{is_a, tag, tag_no_case}, combinator::{eof, map, verify}, error::ParseError, multi::many1, sequence::{delimited, pair, separated_pair, tuple}, IResult, Parser
 };
 use crate::{change_path::{ChangePath, TargetPath}, error::ParserError, objects::{header_type::HeaderType, item_type::ItemType, number::Number}};
-use super::{HEADER_NUMBER, INDENT_NUMBERS, consts::{ALPHA_L, ALPHA_L_VEC}, numbers::parse_number, chars::definition};
+use super::{HEADER_NUMBER, INDENT_NUMBERS, consts::{ALPHA_L, ALPHA_L_VEC}, chars::definition};
 use super::{space0, space1};
 
 // pub trait ReversePath
@@ -40,7 +40,7 @@ pub fn paths(s: &str) -> IResult<&str, TargetPath, ParserError>
 ///`1) в статье 2^2:`
 pub fn only_path_definition(s: &str) -> IResult<&str, TargetPath, ParserError>
 {
-    let (remains, (_,_,_,_,p,_,_)) = ((parse_number, space1, tag("в"), space1, paths, definition, eof)).parse(s)?;
+    let (remains, (_,_,_,_,p,_,_)) = ((Number::parse, space1, tag("в"), space1, paths, definition, eof)).parse(s)?;
     Ok((remains, p))
 }
 

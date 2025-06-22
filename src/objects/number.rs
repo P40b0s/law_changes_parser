@@ -1,9 +1,9 @@
 use std::{cmp::Ordering, str::FromStr};
 use nom::
 {
-    branch::{alt, Choice}, bytes::complete::{is_a, tag}, character::{complete::digit1, one_of}, combinator::{all_consuming, not, opt, verify}, error::ParseError, sequence::{delimited, pair, separated_pair}, IResult, Parser
+    branch::{alt, Choice}, bytes::complete::{is_a, tag}, character::{complete::digit1, one_of}, combinator::{all_consuming, eof, not, opt, verify}, error::ParseError, sequence::{delimited, pair, separated_pair}, IResult, Parser
 };
-use serde::{Deserialize, Serialize};
+use serde::{de::value, Deserialize, Serialize};
 use crate::{outputs::AsMarkdown, parsers::{consts::{SUBSCRIPT, SUPERSCRIPT}, space1, ALPHA_NUMERIC}};
 use crate::{error::ParserError, parsers::ITEM_NUMBER};
 
@@ -15,8 +15,8 @@ pub enum NumberIndex
     Normal
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Hash)]
-pub struct Number2
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, Eq)]
+pub struct Number
 {
     ///Номер пунката статьи итд
     pub number: String,
@@ -24,18 +24,97 @@ pub struct Number2
     pub number_index: NumberIndex,
     ///символ после номера, например . или )
     pub postfix: Option<String>,
-    pub next: Option<Box<Number2>>
+    pub next: Option<Box<Number>>
 }
-impl Number2
+impl Number
 {
-    pub fn get_last()
+    pub fn get_last_mut(&mut self) -> &mut Self
     {
-
+        let mut current = self;
+        while let Some(ref mut next) = current.next
+        {
+            current = next;
+        }
+        current
+    }
+    pub fn parse<'a>(s: &'a str) -> IResult<&'a str, Number, ParserError>
+    {
+        let index = NumberIndex::Normal;
+        complex_number_parser(s, index, None)
+    }
+    pub fn new<T: ToString>(number: T, index: NumberIndex, postfix: Option<String>) -> Self
+    {
+        Number
+        {
+            number: number.to_string(),
+            number_index: index,
+            postfix,
+            next: None
+        }
+    }
+    pub fn apply(&mut self, number: Self)
+    {
+       let last = self.get_last_mut();
+       last.next = Some(Box::new(number));
     }
 }
-// impl Number2
+
+// Итератор по значениям (неизменяемый)
+pub struct NumberIterator<'a> 
+{
+    current: Option<&'a Number>,
+}
+impl<'a> Iterator for NumberIterator<'a> 
+{
+    type Item = &'a Number;
+    fn next(&mut self) -> Option<Self::Item> 
+    {
+        let current = self.current;
+        self.current = current.and_then(|n| n.next.as_deref());
+        current
+    }
+}
+// // Итератор по изменяемым значениям
+// pub struct NumberMutIterator<'a> 
 // {
-//     pub fn parse(s: &str) -> IResult<&str, Number2, ParserError>
+//     current: Option<&'a mut Number>,
+// }
+
+// impl<'a> Iterator for NumberMutIterator<'a> 
+// {
+//     type Item = &'a mut Number;
+
+//     fn next(&mut self) -> Option<Self::Item> 
+//     {
+//         let current = self.current.take();
+//         self.current = current.and_then(|n| n.next.as_deref_mut());
+//         current
+//     }
+// }
+
+// Итератор по владеющим значениям (потребляет структуру)
+pub struct NumberIntoIterator 
+{
+    current: Option<Number>,
+}
+
+impl Iterator for NumberIntoIterator 
+{
+    type Item = Number;
+
+    fn next(&mut self) -> Option<Self::Item> 
+    {
+        self.current.take().map(|mut n| 
+        {
+            self.current = n.next.take().map(|b| *b);
+            n
+        })
+    }
+}
+
+// impl Number
+// {
+//     pub fn parse(s: &str) -> IResult<&str, Number, ParserError>
 //     {
 //         let res = ((
 //             alt((is_alpha_number, is_digit_number)),
@@ -85,7 +164,10 @@ impl Number2
 fn is_alpha_number(s: &str) -> IResult<&str, &str, ParserError>
 {
     let tags = [tag("а"),tag("б"),tag("в"),tag("г"),tag("д"),tag("е"),tag("ё"),tag("ж"),tag("з"),tag("и"),tag("й"),tag("к"),tag("л"),tag("м"),tag("н"),tag("о"),tag("п"),tag("р"),tag("с"),tag("т"),tag("у"),tag("ф"),tag("х"),tag("ц"),tag("ч"),tag("ш"),tag("щ"),tag("ъ"),tag("ы"),tag("ь"),tag("э"),tag("ю"),tag("я")];
-    alt(tags).parse(s)
+    let item = alt(tags).parse(s)?;
+    //для того чтобы не хватать слова целиком у подпункта может быть только одна буква
+    let _ = alt((is_digit_number, space1, eof, tag(":"), is_postfix)).parse(item.0)?;
+    Ok((item.0, item.1))
     //let res = one_of("абвгдеёжзийклмнопрстуфхцчшщъыьэюя").parse(s)?;
 }
 fn is_digit_number(s: &str) -> IResult<&str, &str, ParserError>
@@ -96,92 +178,6 @@ fn is_postfix(s: &str) -> IResult<&str, &str, ParserError>
 {
     alt((tag(")"), tag("."), tag("-"))).parse(s)
 }
-
-fn parse<'a>(s: &'a str) -> IResult<&'a str, Number2, ParserError>
-{
-    let index = NumberIndex::Normal;
-    complex_number_parser(s, index, None)
-}
-//FIXME сейчас устанавливается только 1 чилд, надо искать последнюю ноду и добалять туда
-fn complex_number_parser<'a>(s: &'a str, index:  NumberIndex, mut input_number: Option<Number2>) -> IResult<&'a str, Number2, ParserError>
-{
-    logger::debug!("input {} index: {:?} number: {:?}", s, index, input_number.as_ref());
-    if let Ok((r, _)) = is_superscript(s)
-    {
-        return complex_number_parser(r, NumberIndex::Superscript, input_number);
-    }
-    if let Ok((r, _)) = is_subscript(s)
-    {
-        return complex_number_parser(r, NumberIndex::Subscript, input_number);
-    }
-    logger::debug!("input {} index: {:?} number: {:?}", s, index, input_number.as_ref());
-    let (mut remains, number) = alt((is_alpha_number, is_digit_number)).parse(s)?;
-    logger::debug!("input {} index: {:?} number: {:?}", remains, index, input_number.as_ref());
-    let postfix = is_postfix(remains).map_or(None, |m|
-    {
-        remains = m.0;
-        Some(m.1.to_owned())
-    });
-    logger::debug!("input {} index: {:?} number: {:?}", remains, index, input_number.as_ref());
-    let new_num = Number2
-    {
-        number: number.to_owned(),
-        number_index: index,
-        postfix,
-        next: None
-    };
-    logger::debug!("input {} index: {:?} new_number: {:?}", remains, index, &new_num);
-    let space: Result<(&str, &str), nom::Err<ParserError>> = space1(remains);
-    if space.is_ok()
-    {
-       
-        if let Some(mut n) = input_number
-        {
-            n.next = Some(Box::new(new_num));
-            logger::debug!("input {} index: {:?} number: {:?}", remains, index, &n);
-            Ok((remains, n))
-        }
-        else 
-        {
-            logger::debug!("input {} index: {:?} number: {:?}", remains, index, &new_num);
-            Ok((remains, new_num))    
-        }
-    }
-    else 
-    {
-        if let Some(n) = input_number.as_mut()
-        {
-            n.next = Some(Box::new(new_num));
-            logger::debug!("input {} index: {:?} number: {:?}", remains, index, n);
-            complex_number_parser(remains, index, input_number)
-        }
-        else 
-        {
-            logger::debug!("input {} index: {:?} number: {:?}", remains, index, &new_num);
-            complex_number_parser(remains, index, Some(new_num))
-        }
-    }
-}
-
-// fn is_extended_number(s: &str) -> IResult<&str, (u32, Option<u32>), ParserError>
-// {
-//     let n1 = digit1(s)?;
-//     let separator = opt(tag("-")).parse(n1.0);
-//     if let Ok(_) = separator
-//     {
-//         let (remains, number) = separator?;
-//         if let Some(n) = number
-//         {
-//             let n2 = digit1(separator.0)?;
-//             Ok((n2.0, (n1.1, Some(n2.1))))
-//         }
-//     }
-//     else 
-//     {
-//         Ok((n1.0, (n1.1.parse().unwrap(), None)))
-//     }
-// }
-
 fn is_superscript(s: &str) -> IResult<&str, &str, ParserError>
 {
     tag("^").parse(s)
@@ -192,257 +188,604 @@ fn is_subscript(s: &str) -> IResult<&str, &str, ParserError>
     tag("_").parse(s)
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Hash)]
-pub struct Number
-{
-    ///Номер пунката статьи итд
-    pub number: String,
-    ///продолжение номера, но со стилем va верхним или нижним
-    pub va_number: Option<(String, VerticalAlignment)>,
-    ///символ после номера, например . или )
-    pub postfix: Option<String>
-}
 
-impl Number
+fn complex_number_parser<'a>(s: &'a str, index:  NumberIndex, mut input_number: Option<Number>) -> IResult<&'a str, Number, ParserError>
 {
-    pub fn parse(s: &str) -> IResult<&str, Number, ParserError>
+    logger::debug!("input {} index: {:?} number: {:?}", s, index, input_number.as_ref());
+    if let Ok((r, _)) = is_superscript(s)
     {
-        //если абзац идет первым словом то is_a его сжирал, делаем доп условие
-        let num = verify(is_a(ITEM_NUMBER), |s: &str| !s.starts_with("абза"));
-        let mut normal_parser =  
-        pair(
-        num, 
-        opt(alt((tag(")"), tag("."))))
-        );
-
-        if let Ok((remains, (first_number_part , second_number_part))) = is_superscript_number(s)
+        return complex_number_parser(r, NumberIndex::Superscript, input_number);
+    }
+    if let Ok((r, _)) = is_subscript(s)
+    {
+        return complex_number_parser(r, NumberIndex::Subscript, input_number);
+    }
+    //logger::debug!("input {} index: {:?} number: {:?}", s, index, input_number.as_ref());
+    let (mut remains, number) = alt((is_alpha_number, is_digit_number)).parse(s)?;
+    //logger::debug!("input {} index: {:?} number: {:?}", remains, index, input_number.as_ref());
+    let postfix = is_postfix(remains).map_or(None, |m|
+    {
+        remains = m.0;
+        Some(m.1.to_owned())
+    });
+    //logger::debug!("input {} index: {:?} number: {:?}", remains, index, input_number.as_ref());
+    let new_num = Number
+    {
+        number: number.to_owned(),
+        number_index: index,
+        postfix,
+        next: None
+    };
+    //logger::debug!("input {} index: {:?} new_number: {:?}", remains, index, &new_num);
+    let space: Result<(&str, &str), nom::Err<ParserError>> = alt((space1, eof, tag(":"))).parse(remains);
+    if space.is_ok()
+    {
+       
+        if let Some(mut n) = input_number
         {
-            let (remains, postfix) = opt(alt((tag(")"), tag(".")))).parse(remains)?;
-            return Ok((remains, Number
-            {
-                number: first_number_part.to_owned(),
-                va_number: Some((second_number_part.to_owned(), VerticalAlignment::Superscript)),
-                postfix: postfix.and_then(|a| Some(a.to_owned()))
-            }))
+            n.get_last_mut().next = Some(Box::new(new_num));
+            //logger::debug!("input {} index: {:?} number: {:?}", remains, index, &n);
+            Ok((remains, n))
         }
-
-        if let Ok((remains, (first_number_part , second_number_part))) = is_subscript_number(s)
+        else 
         {
-            let (remains, postfix) = opt(alt((tag(")"), tag(".")))).parse(remains)?;
-            return Ok((remains, Number
-            {
-                number: first_number_part.to_owned(),
-                va_number: Some((second_number_part.to_owned(), VerticalAlignment::Subscript)),
-                postfix: postfix.and_then(|a| Some(a.to_owned()))
-            }))
+            //logger::debug!("input {} index: {:?} number: {:?}", remains, index, &new_num);
+            Ok((remains, new_num))    
         }
-
-        let (remains, (number, postfix)) = 
-        normal_parser.parse(s)?;
-        Ok((remains, Number
+    }
+    else 
+    {
+        if let Some(n) = input_number.as_mut()
         {
-            number: number.to_owned(),
-            va_number: None,
-            postfix: postfix.and_then(|a| Some(a.to_owned()))
-        })
-        )
+            n.get_last_mut().next = Some(Box::new(new_num));
+            //logger::debug!("input {} index: {:?} number: {:?}", remains, index, n);
+            complex_number_parser(remains, index, input_number)
+        }
+        else 
+        {
+            //logger::debug!("input {} index: {:?} number: {:?}", remains, index, &new_num);
+            complex_number_parser(remains, index, Some(new_num))
+        }
     }
 }
+
+
+
+// #[derive(Debug, Serialize, Deserialize, Clone, Hash)]
+// pub struct Number
+// {
+//     ///Номер пунката статьи итд
+//     pub number: String,
+//     ///продолжение номера, но со стилем va верхним или нижним
+//     pub va_number: Option<(String, VerticalAlignment)>,
+//     ///символ после номера, например . или )
+//     pub postfix: Option<String>
+// }
+
+// impl Number
+// {
+//     pub fn parse(s: &str) -> IResult<&str, Number, ParserError>
+//     {
+//         //если абзац идет первым словом то is_a его сжирал, делаем доп условие
+//         let num = verify(is_a(ITEM_NUMBER), |s: &str| !s.starts_with("абза"));
+//         let mut normal_parser =  
+//         pair(
+//         num, 
+//         opt(alt((tag(")"), tag("."))))
+//         );
+
+//         if let Ok((remains, (first_number_part , second_number_part))) = is_superscript_number(s)
+//         {
+//             let (remains, postfix) = opt(alt((tag(")"), tag(".")))).parse(remains)?;
+//             return Ok((remains, Number
+//             {
+//                 number: first_number_part.to_owned(),
+//                 va_number: Some((second_number_part.to_owned(), VerticalAlignment::Superscript)),
+//                 postfix: postfix.and_then(|a| Some(a.to_owned()))
+//             }))
+//         }
+
+//         if let Ok((remains, (first_number_part , second_number_part))) = is_subscript_number(s)
+//         {
+//             let (remains, postfix) = opt(alt((tag(")"), tag(".")))).parse(remains)?;
+//             return Ok((remains, Number
+//             {
+//                 number: first_number_part.to_owned(),
+//                 va_number: Some((second_number_part.to_owned(), VerticalAlignment::Subscript)),
+//                 postfix: postfix.and_then(|a| Some(a.to_owned()))
+//             }))
+//         }
+
+//         let (remains, (number, postfix)) = 
+//         normal_parser.parse(s)?;
+//         Ok((remains, Number
+//         {
+//             number: number.to_owned(),
+//             va_number: None,
+//             postfix: postfix.and_then(|a| Some(a.to_owned()))
+//         })
+//         )
+//     }
+// }
+
+// impl AsMarkdown for Number
+// {
+//     fn as_markdown(&self) -> String
+//     {
+//         let mut n = self.number.clone();
+//         if let Some(va) = self.va_number.as_ref()
+//         {
+//             match va.1
+//             {
+//                 VerticalAlignment::Normal => n.push_str(&va.0),
+//                 VerticalAlignment::Subscript => 
+//                 {
+//                     n.push_str("<sub>");
+//                     n.push_str(&va.0);
+//                     n.push_str("</sub>");
+//                 },
+//                 VerticalAlignment::Superscript =>
+//                 {
+//                     n.push_str("<sup>");
+//                     n.push_str(&va.0);
+//                     n.push_str("</sup>");
+//                 }
+//             }
+//         }
+
+//         if let Some(postfix) = self.postfix.as_ref()
+//         {
+//             n.push_str(postfix);
+//         }
+//         n
+//     }
+// }
+
+// impl AsMarkdown for Number
+// {
+//     fn as_markdown(&self) -> String
+//     {
+//         let mut output = String::new();
+//         let mut current_index: NumberIndex = NumberIndex::Normal;
+//         let count = self.next.iter().count();
+//         output.push_str(&self.number);
+//         if let Some(postfix) = self.postfix.as_ref()
+//         {
+//             output.push_str(&postfix);
+//         }
+//         for (i, v) in self.next.iter().enumerate()
+//         {
+//             if v.number_index == NumberIndex::Superscript
+//             {
+//                 if current_index != v.number_index
+//                 {
+//                     output.push_str("<sup>");
+//                     current_index = v.number_index;
+//                 }
+//             }
+//             if v.number_index == NumberIndex::Subscript
+//             {
+//                 if current_index != v.number_index
+//                 {
+//                     output.push_str("<sub>");
+//                     current_index = v.number_index;
+//                 }
+//             }
+//             output.push_str(&v.number);
+//             if let Some(postfix) = v.postfix.as_ref()
+//             {
+//                 if i == count -1
+//                 {
+//                     if current_index == NumberIndex::Superscript
+//                     {
+//                         output.push_str("</sup>");
+//                     }
+//                     if current_index == NumberIndex::Subscript
+//                     {
+//                         output.push_str("</sub>");
+//                     }
+//                 }
+//                 output.push_str(postfix);
+//             }
+//             else 
+//             {
+//                 if i == count -1
+//                 {
+//                     if current_index == NumberIndex::Superscript
+//                     {
+//                         output.push_str("</sup>");
+//                     }
+//                     if current_index == NumberIndex::Subscript
+//                     {
+//                         output.push_str("</sub>");
+//                     }
+//                 }
+//             }
+//         }
+//         output
+//     }
+// }
 
 impl AsMarkdown for Number
 {
     fn as_markdown(&self) -> String
     {
-        let mut n = self.number.clone();
-        if let Some(va) = self.va_number.as_ref()
+        let mut output = String::new();
+        let mut current_index: NumberIndex = NumberIndex::Normal;
+        output.push_str(&self.number);
+        if let Some(postfix) = self.postfix.as_ref()
         {
-            match va.1
+            output.push_str(&postfix);
+        }
+        let mut current = self;
+        while let Some(next) = current.next.as_ref()
+        {
+            current = next;
+            if current.number_index == NumberIndex::Superscript
             {
-                VerticalAlignment::Normal => n.push_str(&va.0),
-                VerticalAlignment::Subscript => 
+                if current_index != current.number_index
                 {
-                    n.push_str("<sub>");
-                    n.push_str(&va.0);
-                    n.push_str("</sub>");
-                },
-                VerticalAlignment::Superscript =>
+                    output.push_str("<sup>");
+                    current_index = current.number_index;
+                }
+            }
+            if current.number_index == NumberIndex::Subscript
+            {
+                if current_index != current.number_index
                 {
-                    n.push_str("<sup>");
-                    n.push_str(&va.0);
-                    n.push_str("</sup>");
+                    output.push_str("<sub>");
+                    current_index = current.number_index;
+                }
+            }
+            output.push_str(&current.number);
+            if let Some(postfix) = current.postfix.as_ref()
+            {
+                if current.next.is_none()
+                {
+                    end_index(&current_index, &mut output);
+                }
+                output.push_str(postfix);
+            }
+            else 
+            {
+                if current.next.is_none()
+                {
+                    end_index(&current_index, &mut output);
                 }
             }
         }
-
-        if let Some(postfix) = self.postfix.as_ref()
-        {
-            n.push_str(postfix);
-        }
-        n
+        output
+    }
+}
+fn end_index(index: &NumberIndex, output: &mut String)
+{
+    if index == &NumberIndex::Superscript
+    {
+        output.push_str("</sup>");
+    }
+    if index == &NumberIndex::Subscript
+    {
+        output.push_str("</sub>");
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
-pub enum VerticalAlignment
-{
-    Subscript,
-    Superscript,
-    Normal
-}
+
+
+// #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
+// pub enum VerticalAlignment
+// {
+//     Subscript,
+//     Superscript,
+//     Normal
+// }
+
+// impl Ord for Number
+// {
+//     fn cmp(&self, other: &Self) -> std::cmp::Ordering 
+//     {
+//         if let Ok(n) = self.number.parse::<u32>()
+//         {
+//             if let Ok(other_n) = other.number.parse::<u32>()
+//             {
+//                 let cmp = n.cmp(&other_n);
+//                 if cmp == Ordering::Equal
+//                 {
+//                     if let Some((additional, _)) = self.va_number.as_ref()
+//                     {
+//                         if let Some((other_additional, _)) = other.va_number.as_ref()
+//                         {
+//                             if let Ok(an) = additional.parse::<u32>()
+//                             {
+//                                 if let Ok(other_an) = other_additional.parse::<u32>()
+//                                 {
+//                                     an.cmp(&other_an)
+//                                 }
+//                                 else 
+//                                 {
+//                                     additional.cmp(other_additional)    
+//                                 }
+//                             }
+//                             else 
+//                             {
+//                                 additional.cmp(other_additional)    
+//                             }
+//                         }
+//                         else 
+//                         {
+//                             Ordering::Less  
+//                         }
+//                     }
+//                     else 
+//                     {
+//                         if let Some((other_additional, _)) = other.va_number.as_ref()
+//                         {
+//                             Ordering::Less   
+//                         }
+//                         else 
+//                         {
+//                             cmp 
+//                         }
+//                     }
+//                 }
+//                 else 
+//                 {
+//                     cmp    
+//                 }
+                
+//             }
+//             else 
+//             {
+//                 Ordering::Equal    
+//             }
+//         }
+//         else 
+//         {
+//             let ord = self.number.cmp(&other.number);
+//             if ord == Ordering::Equal
+//             {
+//                 if self.va_number.is_none() && other.va_number.is_none()
+//                 {
+//                     Ordering::Equal
+//                 }
+//                 else 
+//                 {
+//                     if let Some((n1, _)) = self.va_number.as_ref()
+//                     {
+//                         if let Some((n2, _)) = other.va_number.as_ref()
+//                         {
+//                             if let Ok(n) = n1.parse::<u32>()
+//                             {
+//                                 if let Ok(other_n) = n2.parse::<u32>()
+//                                 {
+//                                     n.cmp(&other_n)
+//                                 }
+//                                 else 
+//                                 {
+//                                     Ordering::Less   
+//                                 }
+//                             }
+//                             else 
+//                             {
+//                                 Ordering::Equal
+//                             }
+//                         }
+//                         else 
+//                         {
+//                             Ordering::Less    
+//                         }
+//                     }
+//                     else 
+//                     {
+//                         if let Some((_, _)) = other.va_number.as_ref()
+//                         {
+//                             Ordering::Less
+//                         }
+//                         else 
+//                         {
+//                             Ordering::Equal
+//                         }
+//                     }
+//                 }
+//             }
+//             else
+//             {
+//                 ord
+//             }
+//         }
+//     }
+// }
+
 
 impl Ord for Number
 {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering 
     {
-        if let Ok(n) = self.number.parse::<u32>()
+        let num1 = self.number.parse::<u32>();
+        let num2 = other.number.parse::<u32>();
+        if num1.is_ok() && num2.is_ok()
         {
-            if let Ok(other_n) = other.number.parse::<u32>()
+            let cmp = digit_and_digit(num1.as_ref().unwrap(), num2.as_ref().unwrap());
+            if cmp == Ordering::Equal
             {
-                let cmp = n.cmp(&other_n);
-                if cmp == Ordering::Equal
+                let num1_next = self.next.as_ref();
+                let num2_next = other.next.as_ref();
+                if let (Some(n1), Some(n2)) = (num1_next, num2_next)
                 {
-                    if let Some((additional, _)) = self.va_number.as_ref()
-                    {
-                        if let Some((other_additional, _)) = other.va_number.as_ref()
-                        {
-                            if let Ok(an) = additional.parse::<u32>()
-                            {
-                                if let Ok(other_an) = other_additional.parse::<u32>()
-                                {
-                                    an.cmp(&other_an)
-                                }
-                                else 
-                                {
-                                    additional.cmp(other_additional)    
-                                }
-                            }
-                            else 
-                            {
-                                additional.cmp(other_additional)    
-                            }
-                        }
-                        else 
-                        {
-                            Ordering::Less  
-                        }
-                    }
-                    else 
-                    {
-                        if let Some((other_additional, _)) = other.va_number.as_ref()
-                        {
-                            Ordering::Less   
-                        }
-                        else 
-                        {
-                            cmp 
-                        }
-                    }
+                    return n1.cmp(n2);
                 }
                 else 
                 {
-                    cmp    
+                    if num1_next.is_some()
+                    {
+                        return Ordering::Greater;
+                    }
+                    else 
+                    {
+                        return  Ordering::Less;    
+                    }
                 }
-                
             }
             else 
             {
-                Ordering::Equal    
+                return cmp; 
             }
         }
         else 
         {
-            let ord = self.number.cmp(&other.number);
-            if ord == Ordering::Equal
+            if let Ok(n) = num1.as_ref()
             {
-                if self.va_number.is_none() && other.va_number.is_none()
+                return digit_and_alpha(n, &other.number);
+            }
+            else if let Ok(n2) = num2.as_ref()
+            {
+                return alpha_and_digit(&self.number, n2);
+            }
+            else 
+            {
+                let cmp = self.number.cmp(&other.number);
+                if cmp == Ordering::Equal
                 {
-                    Ordering::Equal
-                }
-                else 
-                {
-                    if let Some((n1, _)) = self.va_number.as_ref()
+                    if let (Some(next1), Some(next2)) = (self.next.as_ref(), other.next.as_ref())
                     {
-                        if let Some((n2, _)) = other.va_number.as_ref()
-                        {
-                            if let Ok(n) = n1.parse::<u32>()
-                            {
-                                if let Ok(other_n) = n2.parse::<u32>()
-                                {
-                                    n.cmp(&other_n)
-                                }
-                                else 
-                                {
-                                    Ordering::Less   
-                                }
-                            }
-                            else 
-                            {
-                                Ordering::Equal
-                            }
-                        }
-                        else 
-                        {
-                            Ordering::Less    
-                        }
+                        return next1.cmp(next2);
                     }
                     else 
                     {
-                        if let Some((_, _)) = other.va_number.as_ref()
+                        if self.next.is_some()
                         {
-                            Ordering::Less
+                            return Ordering::Greater;
                         }
                         else 
                         {
-                            Ordering::Equal
+                            return  Ordering::Less;    
                         }
+                    }
+                }
+                else 
+                {
+                    return cmp;
+                } 
+            }
+        }
+    }
+}
+impl PartialEq for Number
+{
+    fn eq(&self, other: &Self) -> bool 
+    {
+        let num1 = self.number.parse::<u32>();
+        let num2 = other.number.parse::<u32>();
+        if let (Ok(n1), Ok(n2)) = (num1.as_ref(), num2.as_ref())
+        {
+            if n1.eq(n2)
+            {
+                if let (Some(next1), Some(next2)) = (self.next.as_ref(), other.next.as_ref())
+                {
+                    return next1.eq(next2);
+                }
+                else 
+                {
+                    if self.next.is_none() && other.next.is_none()
+                    {
+                        return true;
+                    }
+                    else 
+                    {
+                        return false;
                     }
                 }
             }
             else
             {
-                ord
+                return false;
+            }
+        }
+        else 
+        {
+            if num1.is_err() && num2.is_err()
+            {
+                let r = self.number.eq(&other.number);
+                if r
+                {
+                    if let (Some(next1), Some(next2)) = (self.next.as_ref(), other.next.as_ref())
+                    {
+                        return next1.eq(next2)
+                    }
+                    else 
+                    {
+                        return false;
+                    }
+                }
+                else 
+                {
+                    return r;
+                }
+            }
+            else 
+            {
+                return false;
             }
         }
     }
 }
-
-impl PartialEq for Number
-{
-    fn eq(&self, other: &Self) -> bool 
-    {
-        if self.va_number.is_some() && other.va_number.is_some()
-        {
-            let (n, _) = self.va_number.as_ref().unwrap();
-            let (other_n, _) = other.va_number.as_ref().unwrap();
-            &self.number == &other.number && n == other_n && self.postfix == other.postfix
-        }
-        else
-        {
-            &self.number == &other.number && self.postfix == other.postfix
-        }
-    }
-}
-impl Eq for Number {}
-
 impl PartialOrd for Number
 {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> 
     {
         Some(self.cmp(other))
-        // match self.number.partial_cmp(&other.number) 
-        // {
-        //     Some(core::cmp::Ordering::Equal) => {}
-        //     ord => return ord,
-        // }
-        // match self.va_number.partial_cmp(&other.va_number) 
-        // {
-        //     Some(core::cmp::Ordering::Equal) => {}
-        //     ord => return ord,
-        // }
-        // self.postfix.partial_cmp(&other.postfix)
     }
 }
 
+fn digit_and_digit(num1: &u32, num2: &u32) -> Ordering
+{
+    num1.cmp(num2)
+}
+fn digit_and_alpha(_: &u32, _: &str) -> Ordering
+{
+    Ordering::Less
+}
+fn alpha_and_digit(_: &str, _: &u32) -> Ordering
+{
+    Ordering::Greater
+}
+
+
+
+// impl PartialEq for Number
+// {
+//     fn eq(&self, other: &Self) -> bool 
+//     {
+//         if self.va_number.is_some() && other.va_number.is_some()
+//         {
+//             let (n, _) = self.va_number.as_ref().unwrap();
+//             let (other_n, _) = other.va_number.as_ref().unwrap();
+//             &self.number == &other.number && n == other_n && self.postfix == other.postfix
+//         }
+//         else
+//         {
+//             &self.number == &other.number && self.postfix == other.postfix
+//         }
+//     }
+// }
+// impl Eq for Number {}
+
+// impl PartialOrd for Number
+// {
+//     fn partial_cmp(&self, other: &Self) -> Option<Ordering> 
+//     {
+//         Some(self.cmp(other))
+//     }
+// }
+
+// impl FromStr for Number
+// {
+//     type Err = ParserError;
+//     fn from_str(s: &str) -> Result<Self, Self::Err> 
+//     {
+//         let r = Number::parse(s)?;
+//         Ok(r.1)
+//     }
+// }
 impl FromStr for Number
 {
     type Err = ParserError;
@@ -450,222 +793,568 @@ impl FromStr for Number
     {
         let r = Number::parse(s)?;
         Ok(r.1)
-       
-        // let mut number = String::new();
-        // let mut index_number: Option<(String, VerticalAlignment)> = None;
-        // let mut postfix: Option<String> = None;
-        // if s.contains("^")
-        // {
-        //     if let Some((first, second)) = s.split_once("^")
-        //     {
-        //         number = first.to_owned();
-        //         if second.ends_with(".") || second.ends_with(")")
-        //         {
-        //             index_number = Some((second[.. second.len() -1].to_owned(), VerticalAlignment::Superscript));
-        //             postfix = Some(second[second.len() -1 ..].to_owned());
-        //         }
-        //         else 
-        //         {
-        //             index_number = Some((second.to_owned(), VerticalAlignment::Superscript));
-        //         }
-        //     }
-        // }
-        // else if s.contains("_")
-        // {
-        //     if let Some((first, second)) = s.split_once("_")
-        //     {
-        //         number = first.to_owned();
-        //         if second.ends_with(".") || second.ends_with(")")
-        //         {
-        //             index_number = Some((second[.. second.len() -1].to_owned(), VerticalAlignment::Subscript));
-        //             postfix = Some(second[second.len() -1 ..].to_owned());
-        //         }
-        //         else 
-        //         {
-        //             index_number = Some((second.to_owned(), VerticalAlignment::Subscript));
-        //         }
-        //     }
-        // }
-        // else 
-        // {
-        //     if s.ends_with(".") || s.ends_with(")")
-        //     {
-        //         number = s[.. s.len() -1].to_owned();
-        //         postfix = Some(s[s.len() -2 .. s.len() -1].to_owned());
-        //     }
-        //     else 
-        //     {
-        //         number = s.to_owned();   
-        //     }
-        // }
-        // if number.is_empty()
-        // {
-        //     Err(Error::ParseNumberError(s.to_owned()))
-        // }
-        // else 
-        // {
-        //     Ok(Number
-        //     {
-        //         number,
-        //         va_number: index_number,
-        //         postfix
-        //     })
-        // }
     }
-    
 }
 
 
-fn is_subscript_number(s: &str) -> IResult<&str, (&str,&str)>
-{ 
-    let res = (
-        is_a(ITEM_NUMBER),
-        is_a(SUBSCRIPT),
-        is_a(ITEM_NUMBER),
-    ).parse(s)?;
-    Ok((res.0, (res.1.0, res.1.2)))
-}
-fn is_superscript_number(s: &str) -> IResult<&str, (&str,&str)>
-{ 
-    let res = (
-        is_a(ITEM_NUMBER),
-        is_a(SUPERSCRIPT),
-        is_a(ITEM_NUMBER),
-    ).parse(s)?;
-    Ok((res.0, (res.1.0, res.1.2)))
-}
+// fn is_subscript_number(s: &str) -> IResult<&str, (&str,&str)>
+// { 
+//     let res = (
+//         is_a(ITEM_NUMBER),
+//         is_a(SUBSCRIPT),
+//         is_a(ITEM_NUMBER),
+//     ).parse(s)?;
+//     Ok((res.0, (res.1.0, res.1.2)))
+// }
+// fn is_superscript_number(s: &str) -> IResult<&str, (&str,&str)>
+// { 
+//     let res = (
+//         is_a(ITEM_NUMBER),
+//         is_a(SUPERSCRIPT),
+//         is_a(ITEM_NUMBER),
+//     ).parse(s)?;
+//     Ok((res.0, (res.1.0, res.1.2)))
+// }
 
 #[cfg(test)]
 mod tests
 {
-    use crate::objects::number::{Number, VerticalAlignment};
+    use crate::{objects::number::{Number, NumberIndex}, outputs::AsMarkdown};
 
     #[test]
     fn test_ordering()
     {
-        let n1 = Number
-        {
-            number: "123".to_owned(),
-            postfix: Some(")".to_owned()),
-            va_number: Some(("1".to_owned(), VerticalAlignment::Normal))
-        };
-        let n2 = Number
-        {
-            number: "123".to_owned(),
-            postfix: Some(")".to_owned()),
-            va_number: Some(("2".to_owned(), VerticalAlignment::Normal))
-        };
+        let mut n1 = Number::new("123", NumberIndex::Normal, Some("-".to_owned()));
+        let n1_1 = Number::new("1", NumberIndex::Normal, None);
+        n1.apply(n1_1);
+        let mut n2 = Number::new("123", NumberIndex::Normal, Some("-".to_owned()));
+        let n2_1 = Number::new("2", NumberIndex::Normal, None);
+        n2.apply(n2_1);
         assert_eq!(n1 < n2, true);
     }
      #[test]
     fn test_ordering2()
     {
-        let n1 = Number
-        {
-            number: "123".to_owned(),
-            postfix: Some(")".to_owned()),
-            va_number: None
-        };
-        let n2 = Number
-        {
-            number: "123".to_owned(),
-            postfix: Some(")".to_owned()),
-            va_number: Some(("2".to_owned(), VerticalAlignment::Normal))
-        };
+        let n1 = Number::new("123", NumberIndex::Normal, Some("-".to_owned()));
+        let mut n2 = Number::new("123", NumberIndex::Normal, Some("-".to_owned()));
+        let n2_1 = Number::new("1", NumberIndex::Normal, None);
+        n2.apply(n2_1);
         assert_eq!(n1 < n2, true);
     }
       #[test]
     fn test_ordering3()
     {
-        let n1 = Number
-        {
-            number: "124".to_owned(),
-            postfix: Some(")".to_owned()),
-            va_number: None
-        };
-        let n2 = Number
-        {
-            number: "123".to_owned(),
-            postfix: Some(")".to_owned()),
-            va_number: Some(("2".to_owned(), VerticalAlignment::Normal))
-        };
+        let n1 = Number::new("124", NumberIndex::Normal, Some("-".to_owned()));
+        let mut n2 = Number::new("123", NumberIndex::Normal, Some("-".to_owned()));
+        let n2_1 = Number::new("2", NumberIndex::Normal, None);
+        n2.apply(n2_1);
         assert_eq!(n1 > n2, true);
     }
     #[test]
     fn test_ordering4()
     {
-        let n1 = Number
-        {
-            number: "а".to_owned(),
-            postfix: Some(")".to_owned()),
-            va_number: None
-        };
-        let n2 = Number
-        {
-            number: "в".to_owned(),
-            postfix: Some(")".to_owned()),
-            va_number: Some(("2".to_owned(), VerticalAlignment::Normal))
-        };
+        let mut n1 = Number::new("а", NumberIndex::Normal, None);
+        let mut n2 = Number::new("в", NumberIndex::Subscript, None);
+        let n2_1 = Number::new("2", NumberIndex::Normal, Some(")".to_owned()));
+        n2.apply(n2_1);
         assert_eq!(n1 < n2, true);
     }
     #[test]
     fn test_ordering5()
     {
-        let n1 = Number
-        {
-            number: "а".to_owned(),
-            postfix: Some(")".to_owned()),
-            va_number: Some(("24".to_owned(), VerticalAlignment::Normal))
-        };
-        let n2 = Number
-        {
-            number: "а".to_owned(),
-            postfix: Some(")".to_owned()),
-            va_number: Some(("23".to_owned(), VerticalAlignment::Normal))
-        };
+        let mut n1 = Number::new("а", NumberIndex::Normal, None);
+        let n1_1 = Number::new("24", NumberIndex::Normal, Some(")".to_owned()));
+        n1.apply(n1_1);
+        let mut n2 = Number::new("а", NumberIndex::Normal, None);
+        let n2_1 = Number::new("23", NumberIndex::Normal, Some(")".to_owned()));
+        n2.apply(n2_1);
         assert_eq!(n1 > n2, true);
     }
-     #[test]
-    fn test_eq1()
+    #[test]
+    fn test_eq3()
     {
         let n1 = Number
         {
             number: "123".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
             postfix: Some(")".to_owned()),
-            va_number: Some(("1".to_owned(), VerticalAlignment::Normal))
+            next: None
+            
         };
         let n2 = Number
         {
             number: "123".to_owned(),
             postfix: Some(")".to_owned()),
-            va_number: Some(("1".to_owned(), VerticalAlignment::Normal))
+            number_index: crate::objects::number::NumberIndex::Normal,
+            next: None
         };
         assert_eq!(n1 == n2, true);
     }
     #[test]
-    fn test_eq2()
+    fn test_eq4()
     {
         let n1 = Number
         {
             number: "123".to_owned(),
-            postfix: Some(")".to_owned()),
-            va_number: None
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "1".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
         };
         let n2 = Number
         {
             number: "123".to_owned(),
-            postfix: Some(")".to_owned()),
-            va_number: None
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "1".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
         };
         assert_eq!(n1 == n2, true);
     }
 
     #[test]
+    fn test_eq5()
+    {
+        let n1 = Number
+        {
+            number: "а".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "1".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some(")".to_owned()),
+                next: None
+            }))
+            
+        };
+        let n2 = Number
+        {
+            number: "а".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "1".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some(")".to_owned()),
+                next: None
+            }))
+            
+        };
+            
+        assert_eq!(n1 == n2, true);
+    }
+
+    #[test]
+    fn test_eq6()
+    {
+        let n1 = Number
+        {
+            number: "123".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "1".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
+        };
+        let n2 = Number
+        {
+            number: "123".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "2".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
+        };
+        assert_eq!(n1 != n2, true);
+    }
+
+     #[test]
+    fn test_ord_1()
+    {
+        logger::StructLogger::new_default();
+        let n1 = Number
+        {
+            number: "123".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "1".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
+        };
+        let n2 = Number
+        {
+            number: "123".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "2".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
+        };
+        let n3 = Number
+        {
+            number: "123".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: None,
+                next: None
+            }))
+            
+        };
+        let mut values = vec![n2, n1, n3];
+        values.sort();
+        logger::debug!("{:?}", &values);
+        assert_eq!(&values[0].get_last_mut().number, "12");
+    }
+
+    #[test]
+    fn test_ord_2()
+    {
+        logger::StructLogger::new_default();
+        let n1 = Number
+        {
+            number: "а".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "1".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
+        };
+        let n2 = Number
+        {
+            number: "а".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "2".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
+        };
+        let n3 = Number
+        {
+            number: "а".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: None,
+                next: None
+            }))
+            
+        };
+        let mut values = vec![n2, n1, n3];
+        values.sort();
+        logger::debug!("{:?}", &values);
+        assert_eq!(&values[0].get_last_mut().number, "12");
+    }
+
+    #[test]
+    fn test_ord_3()
+    {
+        logger::StructLogger::new_default();
+        let n1 = Number
+        {
+            number: "а".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "1".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
+        };
+        let n2 = Number
+        {
+            number: "а".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "2".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
+        };
+        let n3 = Number
+        {
+            number: "б".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "4".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: None,
+                next: None
+            }))
+            
+        };
+        let mut values = vec![n2, n1, n3];
+        values.sort();
+        logger::debug!("{:?}", &values);
+        assert_eq!(&values[2].get_last_mut().number, "4");
+    }
+    #[test]
+    fn test_ord_4()
+    {
+        logger::StructLogger::new_default();
+        let n1 = Number
+        {
+            number: "а".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "1".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
+        };
+        let n2 = Number
+        {
+            number: "а".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "2".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
+        };
+        let n3 = Number
+        {
+            number: "б".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "4".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: None,
+                next: None
+            }))
+            
+        };
+        let mut values = vec![n2, n1, n3];
+        values.sort();
+        logger::debug!("{:?}", &values);
+        assert_eq!(&values[2].get_last_mut().number, "4");
+    }
+     #[test]
+    fn test_ord_4()
+    {
+        //TODO неверная сортировка номера из-за присутсвия\отсуствия 3 уровня
+        logger::StructLogger::new_default();
+        let mut n1 = Number::new(20, NumberIndex::Normal, None);
+        let n1_1 = Number::new(3, NumberIndex::Normal, None);
+
+        let mut n2 = Number::new(24, NumberIndex::Normal, None);
+        let n2_1 = Number::new(2, NumberIndex::Superscript, None);
+        let n2_2 = Number::new(1, NumberIndex::Superscript, None);
+
+        let mut n3 = Number::new(20, NumberIndex::Normal, None);
+        let n1_1 = Number::new(2, NumberIndex::Normal, None);
+        let n1_2 = Number::new(2, NumberIndex::Normal, None);
+         let n1_2 = Number::new(2, NumberIndex::Normal, None);
+
+        let n1 = Number
+        {
+            number: "а".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "1".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
+        };
+        let n2 = Number
+        {
+            number: "а".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "12".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: Some("-".to_owned()),
+                next: Some(Box::new(Number 
+                {
+                    number: "2".to_owned(),
+                    postfix: Some(")".to_owned()),
+                    number_index: NumberIndex::Superscript,
+                    next: None
+                }))
+            }))
+            
+        };
+        let n3 = Number
+        {
+            number: "б".to_owned(),
+            number_index: crate::objects::number::NumberIndex::Normal,
+            postfix: None,
+            next: Some(Box::new(Number
+            {
+                number: "4".to_owned(),
+                number_index: NumberIndex::Superscript,
+                postfix: None,
+                next: None
+            }))
+            
+        };
+        let mut values = vec![n2, n1, n3];
+        values.sort();
+        logger::debug!("{:?}", &values);
+        assert_eq!(&values[2].get_last_mut().number, "4");
+    }
+
+
+    #[test]
     fn test_parsers_1()
     {
         logger::StructLogger::new_default();
-        let val = "1-2^2-3) ";
-        let parsed = super::parse(val).unwrap();
+        let val = "1-2^2-3:";
+        let parsed = super::Number::parse(val).unwrap();
         logger::debug!("{:?}", parsed);
     }
     #[test]
@@ -689,5 +1378,42 @@ mod tests
         
         let parsed = super::is_digit_number(val).unwrap();
         assert_eq!(parsed.1, "1");
+    }
+     #[test]
+    fn test_parsers_5()
+    {
+        logger::StructLogger::new_default();
+        let val = "дополнить";
+        let parsed = super::Number::parse(val);
+        assert!(parsed.is_err());
+    }
+
+    #[test]
+    fn test_to_markdown_1()
+    {
+         let mut n1 = Number::new("а", NumberIndex::Normal, None);
+        let n1_1 = Number::new("24", NumberIndex::Subscript, Some(")".to_owned()));
+        n1.apply(n1_1);
+        let mut n2 = Number::new("а", NumberIndex::Normal, None);
+        let n2_1 = Number::new("23", NumberIndex::Superscript, Some(")".to_owned()));
+        n2.apply(n2_1);
+        
+        let num1 = n1.as_markdown();
+        let num2 = n2.as_markdown();
+        assert_eq!(&num1, "а<sub>24</sub>)");
+        assert_eq!(&num2, "а<sup>23</sup>)");
+    }
+     #[test]
+    fn test_to_markdown_2()
+    {
+        logger::StructLogger::new_default();
+        let mut n1 = Number::new("а", NumberIndex::Normal, None);
+        let n1_1 = Number::new("1", NumberIndex::Subscript, Some("-".to_owned()));
+        let n1_2 = Number::new("24", NumberIndex::Subscript, Some(")".to_owned()));
+        n1.apply(n1_1);
+        n1.apply(n1_2);
+        logger::debug!("{:?}", &n1);
+        let num1 = n1.as_markdown();
+        assert_eq!(&num1, "а<sub>1-24</sub>)");
     }
 }
