@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 use indexmap::IndexMap;
+use scraper::node;
 use serde::Serialize;
 use crate::{change_path::ChangePath, outputs::AsMarkdown, parsers::changes_parser::{Change, Changes}};
 
@@ -23,26 +24,47 @@ pub struct ChangeEdge
 #[derive(Debug, Default, Serialize)]
 pub struct ChangesGraph
 {
-    pub nodes: Vec<ChangeNode>,
-    pub edges: Vec<ChangeEdge>,
-    //pub nodes: HashMap<u64, ChangeNode>,
-    pub total_changes: u32,
+    //pub nodes: Vec<ChangeNode>,
+    edges: Vec<ChangeEdge>,
+    nodes: IndexMap<u64, ChangeNode>,
+    total_changes: u32,
 }
 
 impl ChangesGraph
 {
+    pub fn get_nodes(&self) -> impl Iterator<Item = &ChangeNode>
+    {
+        self.nodes.iter().map(|m| m.1)
+        
+    }
+    pub fn get_changes_count(&self) -> &u32
+    {
+        &self.total_changes
+    }
+    pub fn get_eges(&self) -> &Vec<ChangeEdge>
+    {
+        &self.edges
+    }
     fn get_node(&self, node_id: &u64) -> &ChangeNode
     {
-        self.nodes.iter().find(|f| &f.id == node_id).unwrap()
+        self.nodes.get(node_id).unwrap()
     }
     fn get_nodes_as_markdown(&self, node_ids: &[u64]) -> Vec<String>
     {
-        self.nodes.iter().filter(|f| node_ids.contains(&f.id)).map(|m| m.change_path.as_markdown()).collect()
+        let mut result = Vec::new();
+        for id in node_ids
+        {
+            if let Some(find) = self.nodes.get(id)
+            {
+                result.push(find.change_path.as_markdown());
+            }
+        }
+        result
     }
-    fn get_nodes(&self, node_ids: &[u64]) -> Vec<&ChangeNode>
-    {
-        self.nodes.iter().filter(|f| node_ids.contains(&f.id)).collect()
-    }
+    // fn get_nodes(&self, node_ids: &[u64]) -> Vec<&ChangeNode>
+    // {
+    //     self.nodes.iter().filter(|f| node_ids.contains(&f.id)).collect()
+    // }
     pub fn get_parent_nodes<'a>(&'a self, node: &'a ChangeNode) -> Vec<&'a ChangeNode>
     {
         let mut nodes = Vec::new();
@@ -54,7 +76,7 @@ impl ChangesGraph
             {
                 if let Some(e) = self.edges.iter().find(|f| f.to_id == id)
                 {
-                    if let Some(n) = self.nodes.iter().find(|f| f.id == e.from_id)
+                    if let Some(n) = self.nodes.get(&e.from_id)
                     {
                         nodes.push(n);
                         queue.push_back(n.id);
@@ -71,16 +93,16 @@ impl ChangesGraph
     {
         let mut result = HashMap::new();
         let root_nodes = self.nodes.iter()
-            .filter(|node| node.level == level)
+            .filter(|node| node.1.level == level)
             .collect::<Vec<_>>();
         
         for root_node in root_nodes 
         {
             let mut descendants = Vec::new();
             let mut queue = VecDeque::new();
-            queue.push_back(root_node.id);
+            queue.push_back(*root_node.0);
             let mut visited = HashSet::new();
-            visited.insert(root_node.id);
+            visited.insert(*root_node.0);
             
             while let Some(current_id) = queue.pop_front() 
             {
@@ -88,19 +110,19 @@ impl ChangesGraph
                 {
                     if !visited.contains(&edge.to_id) 
                     {
-                        if let Some(node) = self.nodes.iter().find(|n| n.id == edge.to_id) 
+                        if let Some(node) = self.nodes.iter().find(|n| *n.0 == edge.to_id) 
                         {
-                            if node.level != level 
+                            if node.1.level != level 
                             {
-                                descendants.push(node);
+                                descendants.push(node.1);
                             }
-                            queue.push_back(node.id);
-                            visited.insert(node.id);
+                            queue.push_back(*node.0);
+                            visited.insert(*node.0);
                         }
                     }
                 }
             }
-            result.insert(root_node.id, descendants);
+            result.insert(*root_node.0, descendants);
         }
         
         result
@@ -116,19 +138,19 @@ impl ChangesGraph
                 acc.entry(edge.from_id).or_default().push(edge.to_id);
                 acc
             });
-
+            logger::debug!("{:?}", &children_index);
         // Создаем индекс нод для быстрого доступа
-        let node_index: IndexMap<u64, &ChangeNode> = self.nodes.iter()
-            .map(|node| (node.id, node))
-            .collect();
+        // let node_index: IndexMap<u64, &ChangeNode> = self.nodes.iter()
+        //     .map(|node| (node.id, node))
+        //     .collect();
 
         let mut result = IndexMap::new();
 
         // Обрабатываем каждую корневую ноду указанного уровня
-        for root_node in self.nodes.iter().filter(|n| n.level == level) 
+        for root_node in self.nodes.iter().filter(|n| n.1.level == level) 
         {
             let mut changed_descendants = Vec::new();
-            let mut stack = vec![(root_node.id, vec![root_node.id])]; // (node_id, current_path)
+            let mut stack = vec![(*root_node.0, vec![*root_node.0])]; // (node_id, current_path)
             let mut visited = HashSet::new();
             while let Some((current_id, current_path)) = stack.pop() 
             {
@@ -141,7 +163,7 @@ impl ChangesGraph
                 {
                     for &child_id in children 
                     {
-                        if let Some(child_node) = node_index.get(&child_id) 
+                        if let Some(child_node) = self.nodes.get(&child_id) 
                         {
                             let mut new_path = current_path.clone();
                             new_path.push(child_id);
@@ -160,7 +182,7 @@ impl ChangesGraph
                     }
                 }
             }
-            result.insert(root_node.id, changed_descendants);
+            result.insert(*root_node.0, changed_descendants);
         }
         result
     }
@@ -174,32 +196,38 @@ impl ChangesGraph
                 acc.entry(edge.from_id).or_default().push(edge.to_id);
                 acc
             });
-
+        logger::debug!("{:?}", self.edges);
         // Создаем индекс нод для быстрого доступа
-        let node_index: IndexMap<u64, &ChangeNode> = self.nodes.iter()
-            .map(|node| (node.id, node))
-            .collect();
+        // let node_index: IndexMap<u64, &ChangeNode> = self.nodes.iter()
+        //     .map(|node| (node.id, node))
+        //     .collect();
 
         let mut result = IndexMap::new();
 
         // Обрабатываем каждую корневую ноду указанного уровня
-        for root_node in self.nodes.iter().filter(|n| n.level == level) 
+        for root_node in self.nodes.iter().filter(|n| n.1.level == level) 
         {
             let mut changed_descendants = Vec::new();
-            let mut stack = vec![(root_node.id, vec![root_node.id])]; // (node_id, current_path)
+            let mut queue = VecDeque::new(); 
+            queue.push_back((*root_node.0, vec![*root_node.0])); 
+            //let mut stack = vec![(*root_node.0, vec![*root_node.0])]; // (node_id, current_path)
             let mut visited = HashSet::new();
-            while let Some((current_id, current_path)) = stack.pop() 
+            while let Some((current_id, current_path)) = queue.pop_front()
             {
                 if !visited.insert(current_id) 
                 {
                     continue;
                 }
+                // let children = self.edges.iter()
+                //     .filter(|e| e.from_id == current_id)
+                //     .map(|e| e.to_id)
+                //     .collect::<Vec<_>>();
                 // Проверяем детей текущей ноды
                 if let Some(children) = children_index.get(&current_id) 
                 {
                     for &child_id in children 
                     {
-                        if let Some(child_node) = node_index.get(&child_id) 
+                        if let Some(child_node) = self.nodes.get(&child_id) 
                         {
                             let mut new_path = current_path.clone();
                             new_path.push(child_id);
@@ -209,19 +237,23 @@ impl ChangesGraph
                                 changed_descendants.push(ChangePathInfo2 
                                 {
                                     node: child_node,
-                                    path: new_path.iter().map(|n| &node_index.get(n).unwrap().change_path).collect(),
+                                    path: new_path.iter().map(|n| &self.nodes.get(n).unwrap().change_path).collect(),
                                 });
                             }
+                            logger::debug!("обработка ноды {}", child_id);
                             // Продолжаем обход
-                            stack.push((child_id, new_path));
+                            queue.push_back((child_id, new_path));
                         }
                     }
                 }
             }
-            result.insert(root_node.id, changed_descendants);
+            //FIXME необходимо отсортировать готовый список узлов, те что имеют 1 наследника будут всегда выше чем те что имеют больше неследников
+            //касается тех у кого общий родитель нулевого уровня 
+            result.insert(*root_node.0, changed_descendants);
         }
         result
     }
+
 
 }
 
@@ -281,7 +313,7 @@ impl Into<ChangesGraph> for Changes
                                     change: Some(last_change.clone()),
                                     level: level,
                                 };
-                                data.nodes.push(node);
+                                data.nodes.insert(node.id, node);
                                 
                                 data.edges.push(ChangeEdge 
                                 {
@@ -298,7 +330,7 @@ impl Into<ChangesGraph> for Changes
                                     change: None,
                                     level: level,
                                 };
-                                data.nodes.push(node);
+                                data.nodes.insert(node.id, node);
                                 data.edges.push(ChangeEdge 
                                 {
                                     from_id: p_id,
@@ -317,7 +349,7 @@ impl Into<ChangesGraph> for Changes
                         change: None,
                         level: level,
                     };
-                    data.nodes.push(node);
+                    data.nodes.insert(node.id, node);
                 }
                 if !ch.is_empty()
                 {
@@ -325,7 +357,7 @@ impl Into<ChangesGraph> for Changes
                 }
             }
         }
-        data.total_changes = data.nodes.iter().filter(|f| f.change.is_some()).count() as u32;
+        data.total_changes = data.nodes.iter().filter(|f| f.1.change.is_some()).count() as u32;
         data
     }
 }
@@ -333,7 +365,7 @@ impl Into<ChangesGraph> for Changes
 #[cfg(test)]
 mod tests
 {
-    use crate::{outputs::AsMarkdown, parsers::changes_parser::Changes, ChangeNode, ChangesGraph};
+    use crate::{change_path::ChangePath, outputs::AsMarkdown, parsers::changes_parser::Changes, ChangeNode, ChangesGraph};
     #[test]
     fn test_graph()
     {
@@ -341,19 +373,28 @@ mod tests
         let test_data = include_str!("..\\test_data\\test_1.txt");
         let changes_list = Changes::get_changes(test_data);
         logger::debug!("{}", serde_json::to_string_pretty(&changes_list).unwrap());
+        let paths: Vec<Vec<ChangePath>> = changes_list.0.iter().map(|c| c.target_path.get_paths().clone()).collect();
+        for p in paths
+        {
+            logger::debug!("path:");
+            for pp in p
+            {
+                logger::debug!("{}", pp.as_markdown());
+            }
+        }
         let gr: ChangesGraph = changes_list.into();
         logger::debug!("Total nodes : {}", gr.nodes.len());
         logger::debug!("Total edges: {}", gr.edges.len());
         logger::debug!("Total changes: {}", gr.total_changes);
         for n in &gr.nodes
         {
-            let path = gr.get_parent_nodes(n);
-            logger::debug!("{}", n.change_path.as_markdown());
+            let path = gr.get_parent_nodes(n.1);
+            logger::debug!("{}", n.1.change_path.as_markdown());
             if !path.is_empty()
             {
                 let fullpath: Vec<String> = path.iter().map(|m| m.change_path.as_markdown()).collect();
                 let fullpath = fullpath.join("->");
-                let fullpath = [&fullpath, "->", &n.change_path.as_markdown()].concat();
+                let fullpath = [&fullpath, "->", &n.1.change_path.as_markdown()].concat();
                 //logger::debug!("fullpath: {}", fullpath);
             }
         }
@@ -371,7 +412,7 @@ mod tests
         let graph: ChangesGraph = changes_list.into();
         for n in graph.nodes
         {
-            logger::debug!("{}", n.change_path.as_markdown());
+            logger::debug!("{}", n.1.change_path.as_markdown());
         }
         //logger::debug!("{}", serde_json::to_string_pretty(&changes_list).unwrap())
     }
@@ -387,7 +428,7 @@ mod tests
         {
             let fullpath: Vec<String> = ch.1.iter().map(|m| m.change_path.as_markdown()).collect();
             let fullpath = fullpath.join("->");
-            let root_node =  graph.nodes.iter().find(|f| &f.id == ch.0).unwrap();
+            let root_node =  graph.nodes.get(ch.0).unwrap();
             let fullpath = [&fullpath, "->", &root_node.change_path.as_markdown()].concat();
             logger::debug!("fullpath: {}", fullpath);
         }
@@ -449,4 +490,5 @@ mod tests
         }
         //logger::debug!("{}", serde_json::to_string_pretty(&changes_list).unwrap())
     }
+  
 }

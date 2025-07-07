@@ -11,13 +11,13 @@ impl TextOutput
     {
         let mut dia = String::from("");
         dia.push_str("\n---\n");
-        dia.push_str(&["Количество изменений: ", &changes.total_changes.to_string()].concat());
+        dia.push_str(&["Количество изменений: ", &changes.get_changes_count().to_string()].concat());
         dia.push_str("\n---\n");
-        for node in &changes.nodes
+        for node in changes.get_nodes()
         {
             if let Some(ch) = node.change.as_ref()
             {
-                let path = changes.get_parent_nodes(node);
+                let path = changes.get_parent_nodes(&node);
                 if !path.is_empty()
                 {
                     let fullpath: Vec<String> = path.iter().map(|m| m.change_path.as_text()).collect();

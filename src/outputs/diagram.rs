@@ -10,11 +10,11 @@ impl MermaidDiagram
     {
         let mut dia = String::from("```mermaid");
         dia.push_str("\n---");
-        dia.push_str(&["\ntitle: ", "\"", "Количество изменений: ", &changes.total_changes.to_string(), "\""].concat());
+        dia.push_str(&["\ntitle: ", "\"", "Количество изменений: ", &changes.get_changes_count().to_string(), "\""].concat());
         dia.push_str("\n---");
         dia.push_str("\n%%{init: { \"themeVariables\": {\"fontSize\": \"20px\"} } }%%");
         dia.push_str("\nflowchart TD\n");
-        for node in &changes.nodes
+        for node in changes.get_nodes()
         {
             if let Some(ch) = node.change.as_ref()
             {
@@ -29,7 +29,7 @@ impl MermaidDiagram
                 dia.push_str(&node_md);
             }
         }
-        for e in &changes.edges
+        for e in changes.get_eges()
         {
             let d = format!("{}-->{}\n", e.from_id, e.to_id);
             dia.push_str(&d);

@@ -12,30 +12,36 @@ impl MarkdownOutput
     {
         let mut dia = String::from("");
         dia.push_str("\n---\n");
-        dia.push_str(&["## Количество изменений: ", &changes.total_changes.to_string()].concat());
+        dia.push_str(&["## Количество изменений: ", &changes.get_changes_count().to_string()].concat());
         dia.push_str("\n---\n");
-        for node in &changes.nodes
+        let nodes = changes.get_changed_descendants_with_paths2(0);
+        for root_node in nodes
         {
-            if let Some(ch) = node.change.as_ref()
+            for node in root_node.1
             {
-                let path = changes.get_parent_nodes(node);
-                if !path.is_empty()
+
+            
+                if let Some(ch) = node.node.change.as_ref()
                 {
-                    let fullpath: Vec<String> = path.iter().map(|m| m.change_path.as_markdown()).collect();
-                    let fullpath = fullpath.join(" ");
-                    let fullpath = ["- **", &fullpath, " ", &node.change_path.as_markdown(), "** ->"].concat();
-                    dia.push_str(&fullpath);
-                    dia.push_str(" ");
+                    let path = changes.get_parent_nodes(node.node);
+                    if !path.is_empty()
+                    {
+                        let fullpath: Vec<String> = path.iter().map(|m| m.change_path.as_markdown()).collect();
+                        let fullpath = fullpath.join(" ");
+                        let fullpath = ["- **", &fullpath, " ", &node.node.change_path.as_markdown(), "** ->"].concat();
+                        dia.push_str(&fullpath);
+                        dia.push_str(" ");
+                    }
+                    
+                    
+                    let change_md = Self::change_text(ch, &node.node.id);
+                    dia.push_str(&change_md);
                 }
-                
-                
-                let change_md = Self::change_text(ch, &node.id);
-                dia.push_str(&change_md);
-            }
             // else 
             // {   
             //     dia.push_str("нода есть но не обработана!");
             // }
+            }
         }
         dia
     }
